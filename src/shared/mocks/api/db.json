@@ -1,0 +1,90 @@
+{
+  "posts": [
+    {
+      "id": "1",
+      "username": "photographer",
+      "userAvatar": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
+      "postImage": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=470&h=470&fit=crop",
+      "content": "Beautiful sunset at the beach 🌅 #photography #sunset #nature",
+      "likes": 1234,
+      "createdAt": "2024-05-20T10:00:00Z",
+      "isVerified": true,
+      "isLiked": false,
+      "isSaved": false,
+      "comments": []
+    }
+  ],
+  "profiles": [
+    {
+      "id": "current_user",
+      "username": "your_username",
+      "fullName": "Your Full Name",
+      "bio": "📸 Photography enthusiast | 🌍 Travel lover | ✨ Living my best life",
+      "avatar": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop&crop=face",
+      "isVerified": false,
+      "isPrivate": false,
+      "followersCount": 1234,
+      "followingCount": 567,
+      "postsCount": 89,
+      "website": "https://your-website.com"
+    }
+  ],
+  "stories": [
+    {
+      "id": "1",
+      "username": "your_story",
+      "userAvatar": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop&crop=face",
+      "storyImage": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800",
+      "createdAt": "2024-05-20T10:00:00Z",
+      "hasNewStory": false
+    }
+  ],
+  "chats": [
+    {
+      "id": "1",
+      "username": "johndoe",
+      "fullName": "John Doe",
+      "avatar": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
+      "lastMessage": "Hey! How are you doing?",
+      "timestamp": "2m",
+      "isOnline": true,
+      "unreadCount": 2
+    }
+  ],
+  "notifications": [
+    {
+      "id": "1",
+      "type": "like",
+      "username": "photographer_pro",
+      "userAvatar": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
+      "isVerified": false,
+      "message": "liked your photo",
+      "timestamp": "2h",
+      "isRead": false,
+      "postImage": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=470&h=470&fit=crop"
+    }
+  ],
+  "searchResults": [
+    {
+      "type": "user",
+      "id": "1",
+      "username": "johndoe",
+      "fullName": "John Doe",
+      "avatar": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
+      "verified": false,
+      "followers": "1.2M followers"
+    }
+  ],
+  "comments": [
+    {
+      "id": "comment-1",
+      "postId": "1",
+      "username": "john_doe",
+      "userAvatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=john",
+      "content": "Amazing photo! 🔥",
+      "createdAt": "2024-01-15T10:30:00Z",
+      "likesCount": 12,
+      "isLiked": false
+    }
+  ]
+}
