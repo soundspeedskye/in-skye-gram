@@ -4,7 +4,6 @@ import { cn } from "@/app/style/utils";
 interface StoryLayoutProps {
   username: string;
   userAvatar: string;
-  storyImage?: string; // 추가된 필드 활용
   hasNewStory?: boolean;
   isMe?: boolean;
 }
@@ -12,7 +11,6 @@ interface StoryLayoutProps {
 export default function StoryLayout({
   username,
   userAvatar,
-  storyImage,
   hasNewStory,
   isMe,
 }: StoryLayoutProps) {

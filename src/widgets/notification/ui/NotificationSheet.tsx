@@ -12,7 +12,6 @@ interface NotificationSheetProps {
 }
 
 export default function NotificationSheet({
-  isOpen,
   onClose,
   isEmbedded = false,
 }: NotificationSheetProps) {

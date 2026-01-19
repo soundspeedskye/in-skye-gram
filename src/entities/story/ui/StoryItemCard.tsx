@@ -23,7 +23,6 @@ export default function StoryItemCard({ story }: StoryItemCardProps) {
           <StoryLayout
             username={story.username}
             userAvatar={story.userAvatar}
-            storyImage={story.storyImage}
             hasNewStory={story.hasNewStory}
             isMe={story.username === "your_story"}
           />

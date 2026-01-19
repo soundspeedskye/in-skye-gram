@@ -19,14 +19,7 @@ const CreateStoryForm = ({
   );
   const [content, setContent] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [backgroundColor, setBackgroundColor] = useState("#000000");
-  const [textColor, setTextColor] = useState("#ffffff");
-  const [fontSize, setFontSize] = useState<"small" | "medium" | "large">(
-    "medium"
-  );
-  const [privacy, setPrivacy] = useState<"public" | "close_friends" | "custom">(
-    "public"
-  );
+
   const [allowReplies, setAllowReplies] = useState(true);
   const [allowSharing, setAllowSharing] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -163,24 +156,12 @@ const CreateStoryForm = ({
           {/* 텍스트 스토리 */}
           {storyType === "text" && (
             <div className="space-y-4">
-              <div
-                className="relative aspect-[9/16] rounded-lg flex items-center justify-center text-center p-4"
-                style={{ backgroundColor, color: textColor }}
-              >
+              <div className="relative aspect-[9/16] rounded-lg flex items-center justify-center text-center p-4">
                 <textarea
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
                   placeholder="스토리를 입력하세요..."
                   className="w-full text-center bg-transparent outline-none resize-none placeholder:opacity-50"
-                  style={{
-                    color: textColor,
-                    fontSize:
-                      fontSize === "small"
-                        ? "16px"
-                        : fontSize === "large"
-                          ? "32px"
-                          : "24px",
-                  }}
                   maxLength={500}
                 />
               </div>
