@@ -1,11 +1,10 @@
 import { createBrowserRouter } from "react-router-dom";
 import FeedPage from "../../pages/MainFeedPage";
-import SignInPage from "../../pages/auth/SignInPage";
-import SignUpPage from "../../pages/auth/SignUpPage";
-import ProfilePage from "../../pages/profile/ProfilePage";
 import PATHS from "./path";
 import RootLayout from "../ui/RootLayout";
-import ProtectedRoute from "../providers/ProtectedRoute";
+import { SignInPage } from "@/pages/auth/SignInPage";
+import { SignUpPage } from "@/pages/auth/SignUpPage";
+import ProfilePage from "@/pages/user-profile/ProfilePage";
 
 const router = createBrowserRouter([
   {
@@ -14,19 +13,11 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: (
-          <ProtectedRoute>
-            <FeedPage />
-          </ProtectedRoute>
-        ),
+        element: <FeedPage />,
       },
       {
         path: PATHS.PROFILE,
-        element: (
-          <ProtectedRoute>
-            <ProfilePage />
-          </ProtectedRoute>
-        ),
+        element: <ProfilePage />,
       },
       {
         path: PATHS.SIGN_IN,

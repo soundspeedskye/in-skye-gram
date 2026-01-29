@@ -1,7 +1,7 @@
 import { Button } from "@/shared/ui/lib/button";
 import { Card, CardContent } from "@/shared/ui/lib/card";
 import { Grid3x3, Bookmark, Heart, MessageCircle } from "lucide-react";
-import type { PostDto } from "@/entities/post/model/post.dto";
+import type { PostDto } from "@/entities/feed/feed-list/model/feed.dto";
 
 interface MyPostCardProps {
   posts: PostDto[];

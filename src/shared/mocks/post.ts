@@ -1,4 +1,4 @@
-import type { PostDto } from "@/entities/post/model/post.dto";
+import type { PostDto } from "@/entities/feed/feed-list/model/feed.dto";
 
 export const postsData: PostDto[] = [
   {

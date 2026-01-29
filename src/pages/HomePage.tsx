@@ -1,4 +1,4 @@
-import SignInForm from "@/features/sign-in/ui/SignInForm";
+import SignInForm from "@/features/auth/sign-in/ui/SignInForm";
 import instagramEntry from "@/shared/assets/icons/instagram-entry.png";
 
 export default function HomePage() {

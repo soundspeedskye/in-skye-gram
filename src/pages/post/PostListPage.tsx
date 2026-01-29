@@ -1,4 +1,4 @@
-import PostItemCard from "@/entities/post/ui/PostItemCard";
+import PostItemCard from "@/entities/feed/feed-list/ui/PostItemCard";
 import { postsData } from "@/shared/mocks/post";
 
 export default function PostListPage() {

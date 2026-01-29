@@ -2,8 +2,8 @@ const PATHS = {
   HOME: "/",
 
   // auth
-  SIGN_IN: "/signin",
-  SIGN_UP: "/signup",
+  SIGN_IN: "/sign-in",
+  SIGN_UP: "/sign-up",
   PROFILE: "/profile",
 
   // post

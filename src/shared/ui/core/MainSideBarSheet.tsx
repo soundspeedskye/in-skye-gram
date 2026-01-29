@@ -10,7 +10,7 @@ import SearchSheet from "@/widgets/search/ui/SearchSheet";
 import MessageSheet from "@/widgets/message/ui/MessageSheet";
 import MessagePage from "@/pages/message/MessagePage";
 import NotificationSheet from "@/widgets/notification/ui/NotificationSheet";
-import CreatePostForm from "@/features/create-post/ui/CreatePostForm";
+import CreatePostForm from "@/features/feed/create-feed/ui/CreatePostForm";
 import { mockProfile } from "@/shared/mocks/profile";
 
 export default function MainSideBarSheet() {
@@ -48,7 +48,7 @@ export default function MainSideBarSheet() {
   const handleNavigation = (
     path: string,
     hasSheet?: boolean,
-    name?: string
+    name?: string,
   ) => {
     if (hasSheet) {
       if (name === "Search") {
@@ -103,7 +103,7 @@ export default function MainSideBarSheet() {
                 variant="ghost"
                 className={cn(
                   "w-full justify-center md:justify-start px-3 py-4 md:py-3 mb-1 bg-transparent hover:bg-transparent",
-                  isActive ? "font-semibold" : ""
+                  isActive ? "font-semibold" : "",
                 )}
                 onClick={() =>
                   handleNavigation(item.path, item.hasSheet, item.name)
@@ -116,7 +116,7 @@ export default function MainSideBarSheet() {
                     isActive &&
                       (item.name === "Notifications" || item.name === "Create"
                         ? "fill-current"
-                        : "")
+                        : ""),
                   )}
                 />
                 {/* 텍스트: md 이상에서만 표시 */}
@@ -134,7 +134,7 @@ export default function MainSideBarSheet() {
             variant="ghost"
             className={cn(
               "w-full justify-center md:justify-start px-3 py-4 md:py-3 bg-transparent hover:bg-transparent",
-              location.pathname === "/profile" ? "font-semibold" : ""
+              location.pathname === "/profile" ? "font-semibold" : "",
             )}
             onClick={() => navigate("/profile")}
           >
