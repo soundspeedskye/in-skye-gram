@@ -1,103 +1,81 @@
 import { supabase } from "@/shared/api/supabase";
-import type {
-  FeedLikeDto,
-  CreateFeedLikeDto,
-  DeleteFeedLikeDto,
-  FeedLikeParams,
-} from "../model/feed-like.dto";
-
-// 좋아요 목록 조회
-export const getFeedLikes = async (
-  params?: FeedLikeParams,
-): Promise<FeedLikeDto[]> => {
-  let query = supabase
-    .from("feed_likes")
-    .select("*")
-    .order("created_at", { ascending: false });
-
-  if (params?.feed_id) {
-    query = query.eq("feed_id", params.feed_id);
-  }
-
-  if (params?.user_id) {
-    query = query.eq("user_id", params.user_id);
-  }
-
-  const { data, error } = await query;
-
-  if (error) throw error;
-  return data as FeedLikeDto[];
-};
+import type { FeedLikeDto, FeedLikeParams } from "../model/feed-like.dto";
 
 // 특정 좋아요 확인
-export const getFeedLike = async (
-  feed_id: number,
-  user_id: string,
-): Promise<FeedLikeDto | null> => {
+export const getFeedLike = async ({
+  feed_id,
+}: FeedLikeDto): Promise<boolean> => {
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+  if (userError) throw userError;
+  if (!user) return false;
+
+  const { data, error } = await supabase
+    .from("feed_likes")
+    .select("feed_id")
+    .eq("feed_id", feed_id)
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (error) throw error;
+  return !!data;
+};
+
+// 여러 피드에 대한 좋아요 여부 확인
+export const getFeedLikes = async (
+  feed_ids: number[],
+): Promise<Record<number, boolean>> => {
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+  if (userError) throw userError;
+  if (!user) return {};
+
+  if (feed_ids.length === 0) return {};
+
+  const { data, error } = await supabase
+    .from("feed_likes")
+    .select("feed_id")
+    .eq("user_id", user.id)
+    .in("feed_id", feed_ids);
+
+  if (error) throw error;
+
+  const result: Record<number, boolean> = {};
+  feed_ids.forEach((id) => {
+    result[id] = false;
+  });
+
+  data?.forEach((like) => {
+    result[like.feed_id] = true;
+  });
+
+  return result;
+};
+
+// 내가 좋아요한 피드 목록 조회
+export const getMyLikedFeeds = async (
+  params: FeedLikeParams,
+): Promise<FeedLikeDto[]> => {
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+  if (userError) throw userError;
+  if (!user) throw new Error("User not authenticated");
+
+  const { limit = 10, offset = 0 } = params;
+
   const { data, error } = await supabase
     .from("feed_likes")
     .select("*")
-    .eq("feed_id", feed_id)
-    .eq("user_id", user_id)
-    .single();
-
-  if (error) {
-    if (error.code === "PGRST116") return null; // Not found
-    throw error;
-  }
-  return data as FeedLikeDto;
-};
-
-// 좋아요 생성
-export const createFeedLike = async (
-  like: CreateFeedLikeDto,
-): Promise<FeedLikeDto> => {
-  const { data, error } = await supabase
-    .from("feed_likes")
-    .insert(like)
-    .select()
-    .single();
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false })
+    .range(offset, offset + limit - 1);
 
   if (error) throw error;
-  return data as FeedLikeDto;
-};
-
-// 좋아요 삭제
-export const deleteFeedLike = async (
-  like: DeleteFeedLikeDto,
-): Promise<void> => {
-  const { error } = await supabase
-    .from("feed_likes")
-    .delete()
-    .eq("feed_id", like.feed_id)
-    .eq("user_id", like.user_id);
-
-  if (error) throw error;
-};
-
-// 좋아요 토글
-export const toggleFeedLike = async (
-  feed_id: number,
-  user_id: string,
-): Promise<{ isLiked: boolean }> => {
-  const existingLike = await getFeedLike(feed_id, user_id);
-
-  if (existingLike) {
-    await deleteFeedLike({ feed_id, user_id });
-    return { isLiked: false };
-  } else {
-    await createFeedLike({ feed_id, user_id });
-    return { isLiked: true };
-  }
-};
-
-// 피드의 좋아요 수 조회
-export const getFeedLikeCount = async (feed_id: number): Promise<number> => {
-  const { count, error } = await supabase
-    .from("feed_likes")
-    .select("*", { count: "exact", head: true })
-    .eq("feed_id", feed_id);
-
-  if (error) throw error;
-  return count || 0;
+  return data || [];
 };

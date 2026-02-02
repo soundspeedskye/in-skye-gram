@@ -5,17 +5,7 @@ export interface FeedLikeDto {
   created_at: string;
 }
 
-export interface CreateFeedLikeDto {
-  feed_id: number;
-  user_id: string;
-}
-
-export interface DeleteFeedLikeDto {
-  feed_id: number;
-  user_id: string;
-}
-
 export interface FeedLikeParams {
-  feed_id?: number;
-  user_id?: string;
+  limit?: number;
+  offset?: number;
 }

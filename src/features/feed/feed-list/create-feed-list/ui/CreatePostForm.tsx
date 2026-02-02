@@ -4,8 +4,8 @@ import { Input } from "@/shared/ui/lib/input";
 import { Label } from "@/shared/ui/lib/label";
 import { X, Image as ImageIcon, MapPin } from "lucide-react";
 import { cn } from "@/app/style/utils";
-import type { CreatePostFormData } from "@/features/feed/create-feed/model/create-post.schema";
-import { createPostSchema } from "@/features/feed/create-feed/model/create-post.schema";
+import type { CreatePostFormData } from "@/features/feed/feed-list/create-feed-list/model/create-post.schema";
+import { createPostSchema } from "@/features/feed/feed-list/create-feed-list/model/create-post.schema";
 
 interface Props {
   onSubmit?: (data: CreatePostFormData) => void;

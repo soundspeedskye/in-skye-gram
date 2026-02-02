@@ -10,7 +10,7 @@ import SearchSheet from "@/widgets/search/ui/SearchSheet";
 import MessageSheet from "@/widgets/message/ui/MessageSheet";
 import MessagePage from "@/pages/message/MessagePage";
 import NotificationSheet from "@/widgets/notification/ui/NotificationSheet";
-import CreatePostForm from "@/features/feed/create-feed/ui/CreatePostForm";
+import CreatePostForm from "@/features/feed/feed-list/create-feed-list/ui/CreatePostForm";
 import { mockProfile } from "@/shared/mocks/profile";
 
 export default function MainSideBarSheet() {

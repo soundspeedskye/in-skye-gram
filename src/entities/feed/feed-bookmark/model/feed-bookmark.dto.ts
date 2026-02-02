@@ -5,17 +5,7 @@ export interface FeedBookmarkDto {
   created_at: string;
 }
 
-export interface CreateFeedBookmarkDto {
-  feed_id: number;
-  user_id: string;
-}
-
-export interface DeleteFeedBookmarkDto {
-  feed_id: number;
-  user_id: string;
-}
-
 export interface FeedBookmarkParams {
-  feed_id?: number;
-  user_id?: string;
+  limit?: number;
+  offset?: number;
 }
