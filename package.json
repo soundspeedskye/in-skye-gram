@@ -8,7 +8,9 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test:api": "vitest run src/shared/api/__tests__"
+    "test:api": "vitest run  --no-file-parallelism",
+    "test:api:ui": "vitest --ui",
+    "gen:types": "supabase gen types typescript --project-id vasvmbxuvudvfmthowqq --schema public > src/shared/api/supabase.types.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -48,6 +50,7 @@
     "@types/react": "^19.2.5",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.1",
+    "@vitest/ui": "4.0.18",
     "autoprefixer": "^10.4.23",
     "dotenv": "^17.3.1",
     "eslint": "^9.39.1",

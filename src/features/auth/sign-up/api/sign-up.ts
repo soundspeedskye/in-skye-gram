@@ -1,6 +1,5 @@
-// sign-up API
-
 import { supabase } from "@/shared/api/supabase";
+import { ensureUserProfile } from "@/shared/api/user-profile.utils";
 import type { SignUpSchema } from "../model/sign-up.schema";
 
 export const signUp = async ({ email, password }: SignUpSchema) => {
@@ -12,20 +11,8 @@ export const signUp = async ({ email, password }: SignUpSchema) => {
   if (error) throw error;
   if (!data.user) throw new Error("User not found");
 
-  const profileImageUrl = generateRandomProfileImage();
-
-  const { error: profileError } = await supabase.from("user_profiles").insert([
-    {
-      user_id: data.user.id,
-      profile_image_url: profileImageUrl,
-    },
-  ]);
-
-  if (profileError) throw profileError;
+  // 프로필 자동 생성 및 닉네임 할당
+  await ensureUserProfile(data.user.id);
 
   return data;
 };
-
-// 프로필 이미지 랜덤 생성
-const generateRandomProfileImage = () =>
-  `https://picsum.photos/50/50?random=${Date.now()}`;

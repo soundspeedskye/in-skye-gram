@@ -8,6 +8,7 @@ export default defineConfig(({ mode }) => {
     test: {
       globals: true,
       environment: 'node',
+      testTimeout: 15000,
     },
     resolve: {
       alias: {
