@@ -35,3 +35,26 @@ export const feedImageStorage = {
     }
   },
 };
+
+export const profileImageStorage = {
+  getProfileImagePath(userId: string) {
+    return `${userId}/profile/profile_img.png`;
+  },
+
+  async upload(userId: string, file: File): Promise<string> {
+    const path = this.getProfileImagePath(userId);
+
+    const { error } = await supabase.storage
+      .from(BUCKET_NAME)
+      .upload(path, file, {
+        upsert: true, // ✅ 덮어쓰기
+        contentType: file.type,
+      });
+
+    if (error) throw error;
+
+    const { data } = supabase.storage.from(BUCKET_NAME).getPublicUrl(path);
+
+    return data.publicUrl;
+  },
+};

@@ -2,6 +2,7 @@ import { supabase } from '@/shared/api/supabase';
 import { getCurrentUser, requireCurrentUser } from '@/shared/api/auth-utils';
 import type { Tables, TablesUpdate, Camelize } from '@/shared/api/types';
 import { toCamelCase } from '@/shared/lib/utils/case';
+import { profileImageStorage } from '@/shared/api/imageStorage';
 
 /** 유저 프로필 도메인 모델 (자동 변환) */
 export type UserProfile = Camelize<Tables<'user_profiles'>>;
@@ -11,6 +12,7 @@ export type UpdateProfileParams = {
   nickname?: string | null;
   description?: string | null;
   profileImageUrl?: string | null;
+  profileImageFile?: File;
 };
 
 export const userProfileAPI = {
@@ -69,7 +71,14 @@ export const userProfileAPI = {
     const updatePayload: TablesUpdate<'user_profiles'> = {};
     if (params.nickname !== undefined) updatePayload.nickname = params.nickname;
     if (params.description !== undefined) updatePayload.description = params.description;
-    if (params.profileImageUrl !== undefined) updatePayload.profile_image_url = params.profileImageUrl;
+    
+    // 이미지 파일이 직접 전달된 경우 업로드 처리
+    if (params.profileImageFile) {
+      const publicUrl = await profileImageStorage.upload(user.id, params.profileImageFile);
+      updatePayload.profile_image_url = publicUrl;
+    } else if (params.profileImageUrl !== undefined) {
+      updatePayload.profile_image_url = params.profileImageUrl;
+    }
 
     if (Object.keys(updatePayload).length === 0) {
       throw new Error('No fields to update');
