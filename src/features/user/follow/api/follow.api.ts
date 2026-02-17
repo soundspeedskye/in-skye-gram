@@ -2,36 +2,36 @@ import { supabase } from '@/shared/api/supabase';
 import { requireCurrentUser, getCurrentUser } from '@/shared/api/auth-utils';
 import type { Tables } from '@/shared/api/types';
 
+/** 프론트엔드에서 사용하는 팔로우 도메인 모델 */
 export interface Follow {
   followerId: string;
   followingId: string;
   createdAt: string;
 }
 
+/** DB follows 테이블의 로우 타입 */
 export type FollowRow = Tables<'follows'>;
 
+/** 조인을 위한 user_profiles 테이블의 부분 타입 */
+export type FollowProfileRow = Pick<Tables<'user_profiles'>, 'user_id' | 'nickname' | 'profile_image_url'>;
+
+/** 프론트엔드에서 사용하는 팔로우 프로필 정보 모델 */
 export interface FollowProfile {
   userId: string;
   nickname: string | null;
   profileImageUrl: string | null;
 }
 
+/** 프로필 정보가 포함된 팔로우 모델 */
 export interface FollowWithProfile extends Follow {
   followerProfile: FollowProfile;
   followingProfile: FollowProfile;
 }
 
+/** user_profiles가 조인된 팔로우 로우 타입 */
 export interface FollowWithProfileRow extends FollowRow {
-  follower_profile: {
-    user_id: string;
-    nickname: string | null;
-    profile_image_url: string | null;
-  } | null;
-  following_profile: {
-    user_id: string;
-    nickname: string | null;
-    profile_image_url: string | null;
-  } | null;
+  follower_profile: FollowProfileRow | null;
+  following_profile: FollowProfileRow | null;
 }
 
 export interface GetFollowsParams {
@@ -44,18 +44,23 @@ export interface FollowCounts {
   followingCount: number;
 }
 
+// ===== Mapping Functions (snake_case -> camelCase) =====
+
+/** DB 팔로우 로우를 앱 모델로 변환 */
 const mapFollow = (row: FollowRow): Follow => ({
   followerId: row.follower_id,
   followingId: row.following_id,
   createdAt: row.created_at,
 });
 
-const mapFollowProfile = (row: any): FollowProfile => ({
+/** DB 프로필 로우를 앱 모델로 변환 */
+const mapFollowProfile = (row: FollowProfileRow | null | undefined): FollowProfile => ({
   userId: row?.user_id ?? '',
   nickname: row?.nickname ?? null,
   profileImageUrl: row?.profile_image_url ?? null,
 });
 
+/** 조인된 팔로우 로우를 프로필 정보가 포함된 앱 모델로 변환 */
 const mapFollowWithProfile = (row: FollowWithProfileRow): FollowWithProfile => ({
   ...mapFollow(row),
   followerProfile: mapFollowProfile(row.follower_profile),

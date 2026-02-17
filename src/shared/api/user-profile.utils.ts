@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import type { TablesInsert } from './types';
 
 /**
  * 랜덤 닉네임 생성
@@ -35,15 +36,15 @@ export const ensureUserProfile = async (userId: string): Promise<void> => {
   const nickname = generateRandomNickname();
   const profileImageUrl = generateRandomProfileImage();
 
+  const insertPayload: TablesInsert<'user_profiles'> = {
+    user_id: userId,
+    nickname: nickname,
+    profile_image_url: profileImageUrl,
+  };
+
   const { error: profileError } = await supabase
     .from('user_profiles')
-    .insert([
-      {
-        user_id: userId,
-        nickname: nickname,
-        profile_image_url: profileImageUrl,
-      },
-    ]);
+    .insert([insertPayload]);
 
   if (profileError) {
     throw new Error(`프로필 생성 실패: ${profileError.message}`);

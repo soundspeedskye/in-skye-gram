@@ -1,7 +1,8 @@
 import { supabase } from '@/shared/api/supabase';
 import { getCurrentUser, requireCurrentUser } from '@/shared/api/auth-utils';
-import type { Tables } from '@/shared/api/types';
+import type { Tables, TablesUpdate } from '@/shared/api/types';
 
+/** 프론트엔드에서 사용하는 유저 프로필 도메인 모델 */
 export interface UserProfile {
   userId: string;
   nickname: string | null;
@@ -13,13 +14,15 @@ export interface UserProfile {
   createdAt: string;
 }
 
+/** DB user_profiles 테이블의 로우 타입 */
 export type UserProfileRow = Tables<'user_profiles'>;
 
-export interface UpdateProfileParams {
+/** 프로필 수정을 위한 파라미터 타입 */
+export type UpdateProfileParams = {
   nickname?: string | null;
   description?: string | null;
   profileImageUrl?: string | null;
-}
+};
 
 export const userProfileAPI = {
   /**
@@ -83,18 +86,18 @@ export const userProfileAPI = {
   updateUserProfile: async (params: UpdateProfileParams): Promise<UserProfile> => {
     const user = await requireCurrentUser();
 
-    const updateData: Record<string, any> = {};
-    if (params.nickname !== undefined) updateData.nickname = params.nickname;
-    if (params.description !== undefined) updateData.description = params.description;
-    if (params.profileImageUrl !== undefined) updateData.profile_image_url = params.profileImageUrl;
+    const updatePayload: TablesUpdate<'user_profiles'> = {};
+    if (params.nickname !== undefined) updatePayload.nickname = params.nickname;
+    if (params.description !== undefined) updatePayload.description = params.description;
+    if (params.profileImageUrl !== undefined) updatePayload.profile_image_url = params.profileImageUrl;
 
-    if (Object.keys(updateData).length === 0) {
+    if (Object.keys(updatePayload).length === 0) {
       throw new Error('No fields to update');
     }
 
     const { data, error } = await supabase
       .from('user_profiles')
-      .update(updateData)
+      .update(updatePayload)
       .eq('user_id', user.id)
       .select()
       .single();
@@ -102,8 +105,7 @@ export const userProfileAPI = {
     if (error) throw error;
     if (!data) throw new Error('Profile update failed');
 
-    const row = data as UserProfileRow;
-    return mapProfileRowToEntity(row);
+    return mapProfileRowToEntity(data as UserProfileRow);
   },
 };
 

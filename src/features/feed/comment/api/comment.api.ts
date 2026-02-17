@@ -1,6 +1,8 @@
 import { supabase } from '@/shared/api/supabase';
 import { requireCurrentUser } from '@/shared/api/auth-utils';
+import type { Tables } from '@/shared/api/types';
 
+/** 프론트엔드에서 사용하는 피드 댓글 도메인 모델 */
 export interface FeedComment {
   id: number;
   feedId: number;
@@ -10,22 +12,18 @@ export interface FeedComment {
   createdAt: string;
 }
 
-export interface FeedCommentRow {
-  id: number;
-  feed_id: number;
-  user_id: string;
-  parent_comment_id: number | null;
-  content: string;
-  created_at: string;
-}
+/** DB feed_comments 테이블의 로우 타입 */
+export type FeedCommentRow = Tables<'feed_comments'>;
 
+/** 조인을 위한 user_profiles 테이블의 부분 타입 */
+export type CommentProfileRow = Pick<Tables<'user_profiles'>, 'nickname' | 'profile_image_url'>;
+
+/** user_profiles가 조인된 댓글 로우 타입 */
 export interface FeedCommentWithProfileRow extends FeedCommentRow {
-  user_profiles: {
-    nickname: string | null;
-    profile_image_url: string | null;
-  };
+  user_profiles: CommentProfileRow | null;
 }
 
+/** 프로필 정보 및 답글(Tree) 형식이 포함된 댓글 모델 */
 export interface FeedCommentWithProfile extends FeedComment {
   userProfiles: {
     nickname: string | null;
@@ -34,6 +32,9 @@ export interface FeedCommentWithProfile extends FeedComment {
   replies?: FeedCommentWithProfile[];
 }
 
+// ===== Mapping Functions (snake_case -> camelCase) =====
+
+/** DB 댓글 로우를 앱 모델로 변환 */
 const mapFeedComment = (row: FeedCommentRow): FeedComment => ({
   id: row.id,
   feedId: row.feed_id,
@@ -43,6 +44,7 @@ const mapFeedComment = (row: FeedCommentRow): FeedComment => ({
   createdAt: row.created_at,
 });
 
+/** 조인된 댓글 로우를 프로필 정보가 포함된 앱 모델로 변환 */
 const mapFeedCommentWithProfile = (row: FeedCommentWithProfileRow): FeedCommentWithProfile => ({
   ...mapFeedComment(row),
   userProfiles: {

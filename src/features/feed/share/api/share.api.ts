@@ -1,6 +1,8 @@
 import { supabase } from '@/shared/api/supabase';
 import { requireCurrentUser } from '@/shared/api/auth-utils';
+import type { Tables } from '@/shared/api/types';
 
+/** 프론트엔드에서 사용하는 피드 공유 도메인 모델 */
 export interface FeedShare {
   id: number;
   feedId: number;
@@ -8,13 +10,12 @@ export interface FeedShare {
   createdAt: string;
 }
 
-export interface FeedShareRow {
-  id: number;
-  feed_id: number;
-  user_id: string;
-  created_at: string;
-}
+/** DB feed_shares 테이블의 로우 타입 */
+export type FeedShareRow = Tables<'feed_shares'>;
 
+// ===== Mapping Functions (snake_case -> camelCase) =====
+
+/** DB 공유 로우를 앱 모델로 변환 */
 const mapFeedShare = (row: FeedShareRow): FeedShare => ({
   id: row.id,
   feedId: row.feed_id,

@@ -1,18 +1,20 @@
 import { supabase } from '@/shared/api/supabase';
 import { requireCurrentUser, getCurrentUser } from '@/shared/api/auth-utils';
+import type { Tables } from '@/shared/api/types';
 
+/** 프론트엔드에서 사용하는 피드 좋아요 도메인 모델 */
 export interface FeedLike {
   feedId: number;
   userId: string;
   createdAt: string;
 }
 
-export interface FeedLikeRow {
-  feed_id: number;
-  user_id: string;
-  created_at: string;
-}
+/** DB feed_likes 테이블의 로우 타입 */
+export type FeedLikeRow = Tables<'feed_likes'>;
 
+// ===== Mapping Functions (snake_case -> camelCase) =====
+
+/** DB 좋아요 로우를 앱 모델로 변환 */
 const mapFeedLike = (row: FeedLikeRow): FeedLike => ({
   feedId: row.feed_id,
   userId: row.user_id,
