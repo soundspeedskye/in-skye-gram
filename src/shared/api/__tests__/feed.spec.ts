@@ -21,9 +21,17 @@ describe('Feed Migration Test (Phase 2)', () => {
     const feedId = created.id;
 
     try {
-      testLogger.step(2, '피드 조회 및 초기 상태 확인');
+      testLogger.step(2, '피드 조회 및 초기 상태 확인 (CamelCase 확인)');
       const feed = await feedAPI.getFeedWithStatus(feedId);
       testMatchers.expectEquals(feed?.id, feedId, '피드 ID 일치 확인');
+      
+      // CamelCase 필드 검증
+      testMatchers.expectNotNull(feed?.userId, 'userId 필드 존재 확인');
+      testMatchers.expectNotNull(feed?.likesCount, 'likesCount 필드 존재 확인');
+      testMatchers.expectNotNull(feed?.createdAt, 'createdAt 필드 존재 확인');
+      testMatchers.expectBoolean((feed as any).user_id === undefined, true, 'snake_case user_id 필드가 없어야 함');
+      testMatchers.expectBoolean((feed as any).likes_count === undefined, true, 'snake_case likes_count 필드가 없어야 함');
+
       testMatchers.expectBoolean(feed?.isLiked || false, false, '초기 좋아요 상태 (false)');
       testMatchers.expectBoolean(feed?.isBookmarked || false, false, '초기 북마크 상태 (false)');
 
