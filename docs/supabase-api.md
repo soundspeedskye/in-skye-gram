@@ -24,6 +24,8 @@
 | | 상태 확인 | `isLiked`, `areLiked` | 특정 게시물에 대해 현재 사용자가 좋아요를 눌렀는지 여부를 조회합니다. |
 | **북마크 (Bookmark)**<br>`src/features/feed/bookmark/api/bookmark.api.ts` | 북마크 추가/취소 | `bookmarkFeed`, `unbookmarkFeed` | `feed_bookmarks` 레코드를 관리합니다. 개인 저장용으로 사용됩니다. |
 | | 상태 확인 | `isBookmarked`, `areBookmarked` | 특정 피드들에 대한 본인의 북마크 여부를 확인합니다. |
+| **공유 (Share)**<br>`src/features/feed/share/api/share.api.ts` | 피드 공유 등록 | `shareFeed` | `feed_shares` 레코드를 생성합니다. **DB 트리거**가 피드의 `shared_count`를 자동 증가시킵니다. |
+| | 공유 목록 조회 | `getSharedFeeds` | 현재 유저가 공유한 피드 목록을 최신순으로 페이징 조회합니다. |
 | **댓글 (Comment)**<br>`src/features/feed/comment/api/comment.api.ts` | 댓글 작성 | `createComment` | `feed_comments`에 레코드를 추가합니다. **DB 트리거**가 피드의 `comments_count`를 자동 증가시킵니다. |
 | | 트리 구조 조회 | `getComments` | 댓글 데이터를 가져와 **부모-자식 계층 트리 구조**로 변환하여 반환합니다. |
 | | 댓글 수정/삭제 | `updateComment`, `deleteComment` | 본인 댓글을 수정하거나 삭제합니다. 삭제 시 **트리거**가 카운트를 차감합니다. |
@@ -53,7 +55,35 @@
 
 ---
 
-## 3. 테스트 환경 (Vitest)
+## 3. 데이터 매핑 및 케이스 변환 (Automated Case Conversion)
+
+프로젝트에서는 DB의 **snake_case** 데이터를 앱의 **camelCase** 모델로 자동 변환하는 표준화된 방식을 사용합니다.
+
+### 핵심 매커니즘
+- **`Camelize<T>` (Type)**: Supabase가 생성한 `Tables` 타입을 바탕으로 모든 필드를 재귀적으로 camelCase로 변환한 타입을 생성합니다.
+- **`toCamelCase(obj)` (Utility)**: 런타임에 객체(중첩 객체 및 배열 포함)의 키를 snake_case에서 camelCase로 재귀적으로 변환합니다.
+
+### 사용 예시 (코드 패턴)
+새로운 API를 작성할 때 수동 매퍼 함수를 만드는 대신 아래 패턴을 권장합니다.
+
+```typescript
+import { toCamelCase } from '@/shared/lib/utils/case';
+import type { Tables, Camelize } from '@/shared/api/types';
+
+// 1. 도메인 타입 정의 (자동 변환)
+export type MyEntity = Camelize<Tables<'my_table'>>;
+
+// 2. API 함수 내 적용
+const { data } = await supabase.from('my_table').select().single();
+return toCamelCase<MyEntity>(data);
+```
+
+> [!TIP]
+> 조인 쿼리(`select('*, user_profiles(*)')`)의 경우에도 `toCamelCase`는 중첩된 `user_profiles`를 `userProfiles`로 자동 변환합니다.
+
+---
+
+## 4. 테스트 환경 (Vitest)
 
 모든 API 로직은 `src/shared/api/__tests__/` 내의 테스트 코드를 통해 검증됩니다.
 

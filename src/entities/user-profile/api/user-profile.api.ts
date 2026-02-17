@@ -1,21 +1,10 @@
 import { supabase } from '@/shared/api/supabase';
 import { getCurrentUser, requireCurrentUser } from '@/shared/api/auth-utils';
-import type { Tables, TablesUpdate } from '@/shared/api/types';
+import type { Tables, TablesUpdate, Camelize } from '@/shared/api/types';
+import { toCamelCase } from '@/shared/lib/utils/case';
 
-/** 프론트엔드에서 사용하는 유저 프로필 도메인 모델 */
-export interface UserProfile {
-  userId: string;
-  nickname: string | null;
-  description: string | null;
-  profileImageUrl: string | null;
-  followerCount: number;
-  followingCount: number;
-  postCount: number;
-  createdAt: string;
-}
-
-/** DB user_profiles 테이블의 로우 타입 */
-export type UserProfileRow = Tables<'user_profiles'>;
+/** 유저 프로필 도메인 모델 (자동 변환) */
+export type UserProfile = Camelize<Tables<'user_profiles'>>;
 
 /** 프로필 수정을 위한 파라미터 타입 */
 export type UpdateProfileParams = {
@@ -26,7 +15,7 @@ export type UpdateProfileParams = {
 
 export const userProfileAPI = {
   /**
-   * 인자로 넘겨진 유저 ID들로 프로필 정보 가져오기
+   * 여러 유저의 프로필 조회
    */
   getUserProfiles: async (userIds: string[]): Promise<UserProfile[]> => {
     if (userIds.length === 0) return [];
@@ -37,11 +26,11 @@ export const userProfileAPI = {
       .in('user_id', userIds);
 
     if (error) throw error;
-    return (data as UserProfileRow[] | null | undefined)?.map(mapProfileRowToEntity) ?? [];
+    return toCamelCase<UserProfile[]>(data);
   },
 
   /**
-   * 현재 유저의 프로필 정보 가져오기
+   * 본인 프로필 조회
    */
   getCurrentUserProfile: async (): Promise<UserProfile | null> => {
     const user = await getCurrentUser();
@@ -51,33 +40,24 @@ export const userProfileAPI = {
       .from('user_profiles')
       .select('*')
       .eq('user_id', user.id)
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
-    if (!data) return null;
-    
-    const row = data as UserProfileRow;
-    return mapProfileRowToEntity(row);
+    return toCamelCase<UserProfile>(data);
   },
 
   /**
-   * 특정 유저 ID로 프로필 정보 가져오기
+   * 특정 유저 프로필 조회
    */
   getUserProfile: async (userId: string): Promise<UserProfile | null> => {
     const { data, error } = await supabase
       .from('user_profiles')
       .select('*')
       .eq('user_id', userId)
-      .single();
+      .maybeSingle();
 
-    if (error) {
-      if (error.code === 'PGRST116') return null;
-      throw error;
-    }
-    if (!data) return null;
-
-    const row = data as UserProfileRow;
-    return mapProfileRowToEntity(row);
+    if (error) throw error;
+    return toCamelCase<UserProfile>(data);
   },
 
   /**
@@ -105,17 +85,6 @@ export const userProfileAPI = {
     if (error) throw error;
     if (!data) throw new Error('Profile update failed');
 
-    return mapProfileRowToEntity(data as UserProfileRow);
+    return toCamelCase<UserProfile>(data);
   },
 };
-
-const mapProfileRowToEntity = (row: UserProfileRow): UserProfile => ({
-  userId: row.user_id,
-  nickname: row.nickname,
-  description: row.description,
-  profileImageUrl: row.profile_image_url,
-  followerCount: row.follower_count,
-  followingCount: row.following_count,
-  postCount: row.post_count,
-  createdAt: row.created_at,
-});

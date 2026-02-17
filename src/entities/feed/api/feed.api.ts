@@ -2,46 +2,31 @@ import { supabase } from '@/shared/api/supabase';
 import { feedImageStorage } from '@/shared/api/imageStorage';
 import { callEdgeFunction } from '@/shared/api/fetchAPI';
 import { requireCurrentUser } from '@/shared/api/auth-utils';
-import type { Tables } from '@/shared/api/types';
-
-// ===== DB Row (snake_case) =====
-/** DB feeds 테이블의 로우 타입 */
-export type FeedRow = Tables<'feeds'>;
-
-/** 조인을 위한 user_profiles 테이블의 부분 타입 */
-export type UserProfileRow = Pick<Tables<'user_profiles'>, 'nickname' | 'profile_image_url'>;
-
-/** user_profiles가 조인된 피드 로우 타입 */
-export interface FeedWithProfileRow extends FeedRow {
-  user_profiles: UserProfileRow | null;
-}
+import type { Tables, Camelize } from '@/shared/api/types';
+import { toCamelCase } from '@/shared/lib/utils/case';
 
 // ===== App Model (camelCase) =====
-/** 프론트엔드에서 사용하는 피드 도메인 모델 */
-export interface Feed {
-  id: number;
-  userId: string;
-  images: string[];
-  caption: string;
-  likesCount: number;
-  commentsCount: number;
-  sharedCount: number;
-  createdAt: string;
+
+/** 피드 도메인 모델 (자동 변환) */
+export type Feed = Camelize<Tables<'feeds'>> & {
   /** 현재 로그인한 사용자가 좋아요 했는지 여부 (클라이언트 상태 매핑) */
   isLiked?: boolean;
   /** 현재 로그인한 사용자가 북마크 했는지 여부 (클라이언트 상태 매핑) */
   isBookmarked?: boolean;
-}
+};
 
-/** 프론트엔드에서 사용하는 유저 프로필 요약 모델 */
-export interface UserProfile {
-  nickname: string | null;
-  profileImageUrl: string | null;
-}
+/** 유저 프로필 요약 (조인용) */
+export type UserProfileRow = Pick<Tables<'user_profiles'>, 'nickname' | 'profile_image_url'>;
+export type UserProfile = Camelize<UserProfileRow>;
 
 /** 프로필 정보가 포함된 피드 모델 */
 export interface FeedWithProfile extends Feed {
   userProfiles: UserProfile;
+}
+
+/** DB 레벨의 조인 로우 타입 */
+export interface FeedWithProfileRow extends Tables<'feeds'> {
+  user_profiles: UserProfileRow | null;
 }
 
 /** 이미지 업로드 시 지원하는 소스 타입 (Web File 또는 RN URI) */
@@ -69,29 +54,17 @@ export interface GetFeedsParams {
 
 // ===== Mapping Functions (snake_case -> camelCase) =====
 
-/** DB 프로필 로우를 앱 모델로 변환 */
-export const mapUserProfile = (row: UserProfileRow | null | undefined): UserProfile => ({
-  nickname: row?.nickname ?? null,
-  profileImageUrl: row?.profile_image_url ?? null,
-});
-
-/** DB 피드 로우를 앱 모델로 변환 (모델 기준 snake -> camel) */
-export const mapFeed = (row: FeedRow): Feed => ({
-  id: row.id,
-  userId: row.user_id,
-  images: row.images,
-  caption: row.caption,
-  likesCount: row.likes_count,
-  commentsCount: row.comments_count,
-  sharedCount: row.shared_count,
-  createdAt: row.created_at,
-});
-
-/** 조인된 피드 로우를 프로필 정보가 포함된 앱 모델로 변환 */
-export const mapFeedWithProfile = (row: FeedWithProfileRow): FeedWithProfile => ({
-  ...mapFeed(row),
-  userProfiles: mapUserProfile(row.user_profiles),
-});
+/** 
+ * 조인된 데이터를 위한 보조 매퍼
+ * (구조적 변환은 toCamelCase가 수행하며, 이 함수는 널 가드만 담당)
+ */
+const transformFeedWithProfile = (row: any): FeedWithProfile => {
+  const camelized = toCamelCase<any>(row);
+  return {
+    ...camelized,
+    userProfiles: camelized.userProfiles ?? { nickname: null, profileImageUrl: null },
+  };
+};
 
 export const feedAPI = {
   /**
@@ -115,7 +88,7 @@ export const feedAPI = {
       .range(offset, offset + limit - 1);
 
     if (error) throw error;
-    return (data as FeedWithProfileRow[] | null | undefined)?.map(mapFeedWithProfile) ?? [];
+    return (data as any[] | null | undefined)?.map(transformFeedWithProfile) ?? [];
   },
 
   /**
@@ -141,7 +114,7 @@ export const feedAPI = {
       throw error;
     }
     if (!data) return null;
-    return mapFeedWithProfile(data as FeedWithProfileRow);
+    return transformFeedWithProfile(data);
   },
 
   /**
@@ -205,7 +178,7 @@ export const feedAPI = {
       .single();
 
     if (error) throw error;
-    return mapFeed(data as FeedRow);
+    return toCamelCase<Feed>(data);
   },
 
   /**
@@ -250,7 +223,7 @@ export const feedAPI = {
       .range(offset, offset + limit - 1);
 
       if (error) throw error;
-    return (data as FeedRow[] | null | undefined)?.map(mapFeed) ?? [];
+    return toCamelCase<Feed[]>(data);
   },
 
   /**

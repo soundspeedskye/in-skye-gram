@@ -1,25 +1,10 @@
 import { supabase } from '@/shared/api/supabase';
 import { requireCurrentUser, getCurrentUser } from '@/shared/api/auth-utils';
-import type { Tables } from '@/shared/api/types';
+import type { Tables, Camelize } from '@/shared/api/types';
+import { toCamelCase } from '@/shared/lib/utils/case';
 
-/** 프론트엔드에서 사용하는 피드 북마크 도메인 모델 */
-export interface FeedBookmark {
-  feedId: number;
-  userId: string;
-  createdAt: string;
-}
-
-/** DB feed_bookmarks 테이블의 로우 타입 */
-export type FeedBookmarkRow = Tables<'feed_bookmarks'>;
-
-// ===== Mapping Functions (snake_case -> camelCase) =====
-
-/** DB 북마크 로우를 앱 모델로 변환 */
-const mapFeedBookmark = (row: FeedBookmarkRow): FeedBookmark => ({
-  feedId: row.feed_id,
-  userId: row.user_id,
-  createdAt: row.created_at,
-});
+/** 피드 북마크 도메인 모델 (자동 변환) */
+export type FeedBookmark = Camelize<Tables<'feed_bookmarks'>>;
 
 export const feedBookmarkAPI = {
   /**
@@ -44,7 +29,7 @@ export const feedBookmarkAPI = {
       throw error;
     }
 
-    return mapFeedBookmark(data as FeedBookmarkRow);
+    return toCamelCase<FeedBookmark>(data);
   },
 
   /**

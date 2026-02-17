@@ -1,27 +1,10 @@
 import { supabase } from '@/shared/api/supabase';
 import { requireCurrentUser } from '@/shared/api/auth-utils';
-import type { Tables } from '@/shared/api/types';
+import type { Tables, Camelize } from '@/shared/api/types';
+import { toCamelCase } from '@/shared/lib/utils/case';
 
-/** 프론트엔드에서 사용하는 피드 공유 도메인 모델 */
-export interface FeedShare {
-  id: number;
-  feedId: number;
-  userId: string;
-  createdAt: string;
-}
-
-/** DB feed_shares 테이블의 로우 타입 */
-export type FeedShareRow = Tables<'feed_shares'>;
-
-// ===== Mapping Functions (snake_case -> camelCase) =====
-
-/** DB 공유 로우를 앱 모델로 변환 */
-const mapFeedShare = (row: FeedShareRow): FeedShare => ({
-  id: row.id,
-  feedId: row.feed_id,
-  userId: row.user_id,
-  createdAt: row.created_at,
-});
+/** 피드 공유 도메인 모델 (자동 변환) */
+export type FeedShare = Camelize<Tables<'feed_shares'>>;
 
 export const feedShareAPI = {
   /**
@@ -38,7 +21,7 @@ export const feedShareAPI = {
 
     if (error) throw error;
 
-    return mapFeedShare(data as FeedShareRow);
+    return toCamelCase<FeedShare>(data);
   },
 
   /**
@@ -56,6 +39,6 @@ export const feedShareAPI = {
       .range(offset, offset + limit - 1);
 
     if (error) throw error;
-    return (data as FeedShareRow[] | null | undefined)?.map(mapFeedShare) ?? [];
+    return toCamelCase<FeedShare[]>(data);
   },
 };

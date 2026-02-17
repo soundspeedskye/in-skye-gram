@@ -1,57 +1,39 @@
 import { supabase } from '@/shared/api/supabase';
 import { requireCurrentUser } from '@/shared/api/auth-utils';
-import type { Tables } from '@/shared/api/types';
+import type { Tables, Camelize } from '@/shared/api/types';
+import { toCamelCase } from '@/shared/lib/utils/case';
 
-/** 프론트엔드에서 사용하는 피드 댓글 도메인 모델 */
-export interface FeedComment {
-  id: number;
-  feedId: number;
-  userId: string;
-  parentCommentId: number | null;
-  content: string;
-  createdAt: string;
-}
-
-/** DB feed_comments 테이블의 로우 타입 */
-export type FeedCommentRow = Tables<'feed_comments'>;
+/** 피드 댓글 도메인 모델 (자동 변환) */
+export type FeedComment = Camelize<Tables<'feed_comments'>>;
 
 /** 조인을 위한 user_profiles 테이블의 부분 타입 */
 export type CommentProfileRow = Pick<Tables<'user_profiles'>, 'nickname' | 'profile_image_url'>;
-
-/** user_profiles가 조인된 댓글 로우 타입 */
-export interface FeedCommentWithProfileRow extends FeedCommentRow {
-  user_profiles: CommentProfileRow | null;
-}
+export type CommentProfile = Camelize<CommentProfileRow>;
 
 /** 프로필 정보 및 답글(Tree) 형식이 포함된 댓글 모델 */
 export interface FeedCommentWithProfile extends FeedComment {
-  userProfiles: {
-    nickname: string | null;
-    profileImageUrl: string | null;
-  };
+  userProfiles: CommentProfile;
   replies?: FeedCommentWithProfile[];
+}
+
+/** DB 레벨의 조인 로우 타입 */
+export interface FeedCommentWithProfileRow extends Tables<'feed_comments'> {
+  user_profiles: CommentProfileRow | null;
 }
 
 // ===== Mapping Functions (snake_case -> camelCase) =====
 
-/** DB 댓글 로우를 앱 모델로 변환 */
-const mapFeedComment = (row: FeedCommentRow): FeedComment => ({
-  id: row.id,
-  feedId: row.feed_id,
-  userId: row.user_id,
-  parentCommentId: row.parent_comment_id,
-  content: row.content,
-  createdAt: row.created_at,
-});
-
-/** 조인된 댓글 로우를 프로필 정보가 포함된 앱 모델로 변환 */
-const mapFeedCommentWithProfile = (row: FeedCommentWithProfileRow): FeedCommentWithProfile => ({
-  ...mapFeedComment(row),
-  userProfiles: {
-    nickname: row.user_profiles?.nickname ?? null,
-    profileImageUrl: row.user_profiles?.profile_image_url ?? null,
-  },
-});
+/** 
+ * UI 트리를 위한 보조 매퍼 (구조적 변환은 toCamelCase가 수행하며, 
+ * 이 함수는 toCamelCase 결과물에 대한 프로필 필드 정규화만 담당)
+ */
+const transformComment = (row: any): FeedCommentWithProfile => {
+  const camelized = toCamelCase<any>(row);
+  return {
+    ...camelized,
+    userProfiles: camelized.userProfiles ?? { nickname: null, profileImageUrl: null },
+  };
+};
 
 export const feedCommentAPI = {
   /**
@@ -75,7 +57,7 @@ export const feedCommentAPI = {
 
     if (error) throw error;
 
-    return mapFeedComment(data as FeedCommentRow);
+    return toCamelCase<FeedComment>(data);
   },
 
   /**
@@ -98,7 +80,7 @@ export const feedCommentAPI = {
     const { data, error } = await supabase.from('feed_comments').update({ content }).eq('id', commentId).select().single();
 
     if (error) throw error;
-    return mapFeedComment(data as FeedCommentRow);
+    return toCamelCase<FeedComment>(data);
   },
 
   /**
@@ -144,7 +126,7 @@ export const feedCommentAPI = {
     if (error) throw error;
 
     const rows = (data || []) as FeedCommentWithProfileRow[];
-    const comments = rows.map(mapFeedCommentWithProfile);
+    const comments = rows.map(transformComment);
 
     const topLevelComments = comments.filter((comment) => comment.parentCommentId === null);
     const replies = comments.filter((comment) => comment.parentCommentId !== null);
