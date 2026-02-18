@@ -1,6 +1,6 @@
 import { describe, it } from 'vitest';
-import { userProfileAPI } from '@/entities/user-profile/api/user-profile.api';
-import { followAPI } from '@/features/user/follow/api/follow.api';
+import { userProfileAPI } from '@/entities/user-profile/api/user-profile.supabase';
+import { followAPI } from '@/features/user/follow/api/follow.supabase';
 import { testLogger, testMatchers, ensureAuth } from './test-helpers';
 
 describe('Profile & Follow Migration Test (Phase 3)', () => {

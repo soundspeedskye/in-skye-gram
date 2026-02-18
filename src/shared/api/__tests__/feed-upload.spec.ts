@@ -1,5 +1,5 @@
 import { describe, it } from 'vitest';
-import { feedAPI } from '@/entities/feed/api/feed.api';
+import { feedAPI } from '@/entities/feed/api/feed.supabase';
 import { supabase } from '@/shared/api/supabase';
 import { testLogger, testMatchers, ensureAuth } from './test-helpers';
 

@@ -12,26 +12,26 @@
 | **인증 (Auth)**<br>`src/features/auth/...` | 로그인 처리 | `signIn` | 이메일 인증 후 세션을 생성합니다. 성공 시 **`ensureUserProfile`**을 호출하여 프로필을 자동 생성합니다. |
 | | 회원가입 처리 | `signUp` | Supabase Auth를 통해 계정을 생성하고 이메일 확인 메일을 발송합니다. |
 | | 프로필 보장 | `ensureUserProfile` | **[핵심 로직]** `user_profiles`에 레코드가 없는 경우 기본 정보를 생성하여 시스템 정합성을 유지합니다. |
-| **피드 (Feed)**<br>`src/entities/feed/api/feed.api.ts` | **목록 조회 (기본)** | `getFeeds` | 전체 피드를 최신순으로 페이징 조회합니다. (비로그인/단순 열람용) |
+| **피드 (Feed)**<br>`src/entities/feed/api/feed.supabase.ts` | **목록 조회 (기본)** | `getFeeds` | 전체 피드를 최신순으로 페이징 조회합니다. (비로그인/단순 열람용) |
 | | **목록 조회 (상태 포함)** | **`getFeedsWithStatus`** | **[권장 - 로그인 시]** 현재 유저의 **좋아요/북마크 여부(`isLiked`, `isBookmarked`)**를 일괄 매핑하여 반환합니다. |
 | | **단건 조회 (기본)** | `getFeed` | 특정 피드 ID의 정보를 가져옵니다. 좋아요/북마크 상태는 포함되지 않습니다. |
 | | **단건 조회 (상태 포함)** | **`getFeedWithStatus`** | **[권장 - 로그인 시]** 단일 피드 상세 정보와 함께 **본인의 상호작용 상태**를 포함하여 반환합니다. |
 | | 피드 생성 | `createFeed` | **Edge Function 연동**: 이미지 업로드와 DB 레코드 생성을 원자적으로 처리합니다. 작성자의 `post_count`가 자동 증가합니다. |
-| | 피드 수정 | `updateFeed` | 본인의 피드인 경우에만 캡션 등을 수정합니다. |
+| | 피드 수정 | `updateFeed` | 본인의 피드인 경우에만 캡션을 수정합니다.(이미지 수정불가) |
 | | 피드 삭제 | `deleteFeed` | DB 레코드를 삭제합니다. **DB 트리거**가 작동하여 `post_count`가 감소하며, 관련 스토리지 파일도 일괄 제거됩니다. |
 | | 본인 피드 필터링 | `getMyFeeds` | 현재 로그인 유저가 작성한 피드들만 필터링하여 반환합니다. |
-| **좋아요 (Like)**<br>`src/features/feed/like/api/like.api.ts` | 좋아요 등록/취소 | `likeFeed`, `unlikeFeed` | `feed_likes` 레코드를 생성/삭제합니다. **DB 트리거**가 피드의 `likes_count`를 자동 갱신합니다. |
+| **좋아요 (Like)**<br>`src/features/feed/like/api/like.supabase.ts` | 좋아요 등록/취소 | `likeFeed`, `unlikeFeed` | `feed_likes` 레코드를 생성/삭제합니다. **DB 트리거**가 피드의 `likes_count`를 자동 갱신합니다. |
 | | 상태 확인 | `isLiked`, `areLiked` | 특정 게시물에 대해 현재 사용자가 좋아요를 눌렀는지 여부를 조회합니다. |
-| **북마크 (Bookmark)**<br>`src/features/feed/bookmark/api/bookmark.api.ts` | 북마크 추가/취소 | `bookmarkFeed`, `unbookmarkFeed` | `feed_bookmarks` 레코드를 관리합니다. 개인 저장용으로 사용됩니다. |
+| **북마크 (Bookmark)**<br>`src/features/feed/bookmark/api/bookmark.supabase.ts` | 북마크 추가/취소 | `bookmarkFeed`, `unbookmarkFeed` | `feed_bookmarks` 레코드를 관리합니다. 개인 저장용으로 사용됩니다. |
 | | 상태 확인 | `isBookmarked`, `areBookmarked` | 특정 피드들에 대한 본인의 북마크 여부를 확인합니다. |
-| **공유 (Share)**<br>`src/features/feed/share/api/share.api.ts` | 피드 공유 등록 | `shareFeed` | `feed_shares` 레코드를 생성합니다. **DB 트리거**가 피드의 `shared_count`를 자동 증가시킵니다. |
+| **공유 (Share)**<br>`src/features/feed/share/api/share.supabase.ts` | 피드 공유 등록 | `shareFeed` | `feed_shares` 레코드를 생성합니다. **DB 트리거**가 피드의 `shared_count`를 자동 증가시킵니다. |
 | | 공유 목록 조회 | `getSharedFeeds` | 현재 유저가 공유한 피드 목록을 최신순으로 페이징 조회합니다. |
-| **댓글 (Comment)**<br>`src/features/feed/comment/api/comment.api.ts` | 댓글 작성 | `createComment` | `feed_comments`에 레코드를 추가합니다. **DB 트리거**가 피드의 `comments_count`를 자동 증가시킵니다. |
+| **댓글 (Comment)**<br>`src/features/feed/comment/api/comment.supabase.ts` | 댓글 작성 | `createComment` | `feed_comments`에 레코드를 추가합니다. **DB 트리거**가 피드의 `comments_count`를 자동 증가시킵니다. |
 | | 트리 구조 조회 | `getComments` | 댓글 데이터를 가져와 **부모-자식 계층 트리 구조**로 변환하여 반환합니다. |
 | | 댓글 수정/삭제 | `updateComment`, `deleteComment` | 본인 댓글을 수정하거나 삭제합니다. 삭제 시 **트리거**가 카운트를 차감합니다. |
-| **프로필 (Profile)**<br>`src/entities/user-profile/api/user-profile.api.ts` | 프로필 조회 | `getCurrentUserProfile`, `getUserProfile` | 본인 또는 타인의 `nickname`, `post_count`, `follower_count` 등을 조회합니다. |
+| **프로필 (Profile)**<br>`src/entities/user-profile/api/user-profile.supabase.ts` | 프로필 조회 | `getCurrentUserProfile`, `getUserProfile` | 본인 또는 타인의 `nickname`, `post_count`, `follower_count` 등을 조회합니다. |
 | | 정보 업데이트 | `updateUserProfile` | 닉네임, 프로필 이미지 URL 등을 `user_profiles` 테이블에 반영합니다. |
-| **팔로우 (Follow)**<br>`src/features/user/follow/api/follow.api.ts` | 팔로우/언팔로우 | `follow_user`, `unfollow_user` | **RPC (DB Function)** 호출을 통해 원자적으로 관계를 맺고 카운트를 동기화합니다. |
+| **팔로우 (Follow)**<br>`src/features/user/follow/api/follow.supabase.ts` | 팔로우/언팔로우 | `follow_user`, `unfollow_user` | **RPC (DB Function)** 호출을 통해 원자적으로 관계를 맺고 카운트를 동기화합니다. |
 | | 상태 및 수치 확인 | `isFollowing`, `getFollowCounts` | 팔로우 여부 및 팔로워/팔로잉 총 숫자를 조회합니다. |
 | **스토리지 (Storage)**<br>`src/shared/api/imageStorage.ts` | 리소스 제거 | `removeAll` | 피드 삭제 시 해당 경로의 모든 이미지를 일괄 삭제합니다. |
 
@@ -46,8 +46,8 @@
     - `supabase.ts`: Supabase 클라이언트 인스턴스
     - `user-profile.utils.ts`: 프로필 자동 생성(`ensureUserProfile`) 등 핵심 헬퍼
     - `imageStorage.ts`: 스토리지 파일 관리 유틸리티
-- **`src/entities/[domain]/api/`**: 도메인 데이터 중심의 기본 CRUD (`feed.api.ts`, `user-profile.api.ts`)
-- **`src/features/[function]/api/`**: 유저 인터랙션 기능 중심 (`like.api.ts`, `follow.api.ts`, `comment.api.ts`)
+- **`src/entities/[domain]/api/`**: 도메인 데이터 중심의 기본 CRUD (`feed.supabase.ts`, `user-profile.supabase.ts`)
+- **`src/features/[function]/api/`**: 유저 인터랙션 기능 중심 (`like.supabase.ts`, `follow.supabase.ts`, `comment.supabase.ts`)
 
 ### 핵심 유틸리티
 - **`ensureUserProfile(userId)`**: 인증 세션은 있으나 프로필 테이블에 정보가 없는 경우를 방지하기 위해 기본 데이터를 생성합니다.

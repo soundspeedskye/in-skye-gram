@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { feedAPI } from '@/entities/feed/api/feed.api';
-import { feedLikeAPI } from '@/features/feed/like/api/like.api';
-import { feedBookmarkAPI } from '@/features/feed/bookmark/api/bookmark.api';
-import { feedCommentAPI } from '@/features/feed/comment/api/comment.api';
-import { feedShareAPI } from '@/features/feed/share/api/share.api';
+import { feedAPI } from '@/entities/feed/api/feed.supabase';
+import { feedLikeAPI } from '@/features/feed/like/api/like.supabase';
+import { feedBookmarkAPI } from '@/features/feed/bookmark/api/bookmark.supabase';
+import { feedCommentAPI } from '@/features/feed/comment/api/comment.supabase';
+import { feedShareAPI } from '@/features/feed/share/api/share.supabase';
 import { testLogger, testMatchers, ensureAuth } from './test-helpers';
 
 describe('Feed Migration Test (Phase 2)', () => {

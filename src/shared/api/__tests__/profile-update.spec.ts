@@ -1,5 +1,5 @@
 import { describe, it, vi } from 'vitest';
-import { userProfileAPI } from '@/entities/user-profile/api/user-profile.api';
+import { userProfileAPI } from '@/entities/user-profile/api/user-profile.supabase';
 import { profileImageStorage } from '@/shared/api/imageStorage';
 import { testLogger, testMatchers, ensureAuth } from './test-helpers';
 

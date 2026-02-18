@@ -235,8 +235,8 @@ export const feedAPI = {
 
     const feedIds = baseFeeds.map((feed) => feed.id);
 
-    const { feedLikeAPI } = await import('@/features/feed/like/api/like.api');
-    const { feedBookmarkAPI } = await import('@/features/feed/bookmark/api/bookmark.api');
+    const { feedLikeAPI } = await import('@/features/feed/like/api/like.supabase');
+    const { feedBookmarkAPI } = await import('@/features/feed/bookmark/api/bookmark.supabase');
 
     const [likedMap, bookmarkedMap] = await Promise.all([
       feedLikeAPI.areLiked(feedIds),
@@ -257,8 +257,8 @@ export const feedAPI = {
     const baseFeed = await feedAPI.getFeed(feedId);
     if (!baseFeed) return null;
 
-    const { feedLikeAPI } = await import('@/features/feed/like/api/like.api');
-    const { feedBookmarkAPI } = await import('@/features/feed/bookmark/api/bookmark.api');
+    const { feedLikeAPI } = await import('@/features/feed/like/api/like.supabase');
+    const { feedBookmarkAPI } = await import('@/features/feed/bookmark/api/bookmark.supabase');
 
     const [isLiked, isBookmarked] = await Promise.all([
       feedLikeAPI.isLiked(feedId),
