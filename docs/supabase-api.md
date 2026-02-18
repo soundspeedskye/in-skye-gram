@@ -13,13 +13,13 @@
 | | 회원가입 처리 | `signUp` | Supabase Auth를 통해 계정을 생성하고 이메일 확인 메일을 발송합니다. |
 | | 프로필 보장 | `ensureUserProfile` | **[핵심 로직]** `user_profiles`에 레코드가 없는 경우 기본 정보를 생성하여 시스템 정합성을 유지합니다. |
 | **피드 (Feed)**<br>`src/entities/feed/api/feed.supabase.ts` | **목록 조회 (기본)** | `getFeeds` | 전체 피드를 최신순으로 페이징 조회합니다. (비로그인/단순 열람용) |
-| | **목록 조회 (상태 포함)** | **`getFeedsWithStatus`** | **[권장 - 로그인 시]** 현재 유저의 **좋아요/북마크 여부(`isLiked`, `isBookmarked`)**를 일괄 매핑하여 반환합니다. |
 | | **단건 조회 (기본)** | `getFeed` | 특정 피드 ID의 정보를 가져옵니다. 좋아요/북마크 상태는 포함되지 않습니다. |
-| | **단건 조회 (상태 포함)** | **`getFeedWithStatus`** | **[권장 - 로그인 시]** 단일 피드 상세 정보와 함께 **본인의 상호작용 상태**를 포함하여 반환합니다. |
 | | 피드 생성 | `createFeed` | **Edge Function 연동**: 이미지 업로드와 DB 레코드 생성을 원자적으로 처리합니다. 작성자의 `post_count`가 자동 증가합니다. |
-| | 피드 수정 | `updateFeed` | 본인의 피드인 경우에만 캡션을 수정합니다.(이미지 수정불가) |
-| | 피드 삭제 | `deleteFeed` | DB 레코드를 삭제합니다. **DB 트리거**가 작동하여 `post_count`가 감소하며, 관련 스토리지 파일도 일괄 제거됩니다. |
+| | 피드 수정 | `updateFeed` | 본인의 피드인 경우에만 캡션을 수정합니다. (이미지 수정 불가) |
+| | 피드 삭제 | `deleteFeed` | DB 레코드를 삭제합니다. **DB 트리거**가 작동하여 `post_count`가 감소하며, 관련 스토리리 파일도 일괄 제거됩니다. |
 | | 본인 피드 필터링 | `getMyFeeds` | 현재 로그인 유저가 작성한 피드들만 필터링하여 반환합니다. |
+| **피드 상태 연동 (Status)**<br>`src/features/feed/api/feed-status.supabase.ts` | **목록 조회 (상태 포함)** | **`getFeedsWithStatus`** | **[권장 - 로그인 시]** 현재 유저의 **좋아요/북마크 여부(`isLiked`, `isBookmarked`)**를 일괄 매핑하여 반환합니다. |
+| | **단건 조회 (상태 포함)** | **`getFeedWithStatus`** | **[권장 - 로그인 시]** 단일 피드 상세 정보와 함께 **본인의 상호작용 상태**를 포함하여 반환합니다. |
 | **좋아요 (Like)**<br>`src/features/feed/like/api/like.supabase.ts` | 좋아요 등록/취소 | `likeFeed`, `unlikeFeed` | `feed_likes` 레코드를 생성/삭제합니다. **DB 트리거**가 피드의 `likes_count`를 자동 갱신합니다. |
 | | 상태 확인 | `isLiked`, `areLiked` | 특정 게시물에 대해 현재 사용자가 좋아요를 눌렀는지 여부를 조회합니다. |
 | **북마크 (Bookmark)**<br>`src/features/feed/bookmark/api/bookmark.supabase.ts` | 북마크 추가/취소 | `bookmarkFeed`, `unbookmarkFeed` | `feed_bookmarks` 레코드를 관리합니다. 개인 저장용으로 사용됩니다. |

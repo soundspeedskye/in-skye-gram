@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { feedAPI } from '@/entities/feed/api/feed.supabase';
+import { feedStatusAPI } from '@/features/feed/api/feed-status.supabase';
 import { feedLikeAPI } from '@/features/feed/like/api/like.supabase';
 import { feedBookmarkAPI } from '@/features/feed/bookmark/api/bookmark.supabase';
 import { feedCommentAPI } from '@/features/feed/comment/api/comment.supabase';
@@ -22,7 +23,7 @@ describe('Feed Migration Test (Phase 2)', () => {
 
     try {
       testLogger.step(2, '피드 조회 및 초기 상태 확인 (CamelCase 확인)');
-      const feed = await feedAPI.getFeedWithStatus(feedId);
+      const feed = await feedStatusAPI.getFeedWithStatus(feedId);
       testMatchers.expectEquals(feed?.id, feedId, '피드 ID 일치 확인');
       
       // CamelCase 필드 검증
@@ -49,19 +50,19 @@ describe('Feed Migration Test (Phase 2)', () => {
       await feedBookmarkAPI.bookmarkFeed(feedId);
       expect(await feedBookmarkAPI.isBookmarked(feedId)).toBe(true);
       
-      const afterInteraction = await feedAPI.getFeedWithStatus(feedId);
+      const afterInteraction = await feedStatusAPI.getFeedWithStatus(feedId);
       testMatchers.expectBoolean(afterInteraction?.isLiked || false, true, '상호작용 후 좋아요 상태 (true)');
       testMatchers.expectBoolean(afterInteraction?.isBookmarked || false, true, '상호작용 후 북마크 상태 (true)');
 
       // 취소 테스트
       await feedLikeAPI.unlikeFeed(feedId);
       await feedBookmarkAPI.unbookmarkFeed(feedId);
-      const afterCancel = await feedAPI.getFeedWithStatus(feedId);
+      const afterCancel = await feedStatusAPI.getFeedWithStatus(feedId);
       testMatchers.expectBoolean(afterCancel?.isLiked || false, false, '취소 후 좋아요 상태 (false)');
       testMatchers.expectBoolean(afterCancel?.isBookmarked || false, false, '취소 후 북마크 상태 (false)');
 
       testLogger.step(5, '피드 목록 조회 테스트 (With Status)');
-      const feeds = await feedAPI.getFeedsWithStatus({ limit: 5 });
+      const feeds = await feedStatusAPI.getFeedsWithStatus({ limit: 5 });
       testMatchers.expectNotNull(feeds, '목록 조회 확인');
       // 벌크 조회 시 상태 맵 확인 (areLiked, areBookmarked 검증 효과)
       const likedMap = await feedLikeAPI.areLiked([feedId]);

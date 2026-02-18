@@ -8,12 +8,7 @@ import { toCamelCase } from '@/shared/lib/utils/case';
 // ===== App Model (camelCase) =====
 
 /** 피드 도메인 모델 (자동 변환) */
-export type Feed = Camelize<Tables<'feeds'>> & {
-  /** 현재 로그인한 사용자가 좋아요 했는지 여부 (클라이언트 상태 매핑) */
-  isLiked?: boolean;
-  /** 현재 로그인한 사용자가 북마크 했는지 여부 (클라이언트 상태 매핑) */
-  isBookmarked?: boolean;
-};
+export type Feed = Camelize<Tables<'feeds'>>;
 
 /** 유저 프로필 요약 (조인용) */
 export type UserProfileRow = Pick<Tables<'user_profiles'>, 'nickname' | 'profile_image_url'>;
@@ -224,51 +219,5 @@ export const feedAPI = {
 
       if (error) throw error;
     return toCamelCase<Feed[]>(data);
-  },
-
-  /**
-   * 피드 목록 + 현재 사용자 기준 좋아요/북마크 여부까지 함께 조회
-   */
-  getFeedsWithStatus: async (params: GetFeedsParams = {}): Promise<FeedWithProfile[]> => {
-    const baseFeeds = await feedAPI.getFeeds(params);
-    if (baseFeeds.length === 0) return baseFeeds;
-
-    const feedIds = baseFeeds.map((feed) => feed.id);
-
-    const { feedLikeAPI } = await import('@/features/feed/like/api/like.supabase');
-    const { feedBookmarkAPI } = await import('@/features/feed/bookmark/api/bookmark.supabase');
-
-    const [likedMap, bookmarkedMap] = await Promise.all([
-      feedLikeAPI.areLiked(feedIds),
-      feedBookmarkAPI.areBookmarked(feedIds),
-    ]);
-
-    return baseFeeds.map((feed) => ({
-      ...feed,
-      isLiked: !!likedMap[feed.id],
-      isBookmarked: !!bookmarkedMap[feed.id],
-    }));
-  },
-
-  /**
-   * 단일 피드 + 현재 사용자 기준 좋아요/북마크 여부까지 함께 조회
-   */
-  getFeedWithStatus: async (feedId: number): Promise<FeedWithProfile | null> => {
-    const baseFeed = await feedAPI.getFeed(feedId);
-    if (!baseFeed) return null;
-
-    const { feedLikeAPI } = await import('@/features/feed/like/api/like.supabase');
-    const { feedBookmarkAPI } = await import('@/features/feed/bookmark/api/bookmark.supabase');
-
-    const [isLiked, isBookmarked] = await Promise.all([
-      feedLikeAPI.isLiked(feedId),
-      feedBookmarkAPI.isBookmarked(feedId),
-    ]);
-
-    return {
-      ...baseFeed,
-      isLiked,
-      isBookmarked,
-    };
   },
 };
