@@ -19,16 +19,7 @@ export default defineConfig([
       ecmaVersion: 2020,
       globals: globals.browser,
     },
-    plugins: {
-      "@typescript-eslint": tseslint.plugin,
-      "react-hooks": reactHooks,
-      "react-refresh": reactRefresh,
-      prettier: eslintPluginPrettier,
-    },
     rules: {
-      ...prettier.rules,
-      ...reactHooks.configs.recommended.rules,
-      "prettier/prettier": "error",
       "react-refresh/only-export-components": [
         "warn",
         { allowConstantExport: true },
