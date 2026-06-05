@@ -1,5 +1,10 @@
+import type { Tables, TablesInsert } from "@/shared/api/supabase.types";
+
+type FeedDto = Tables<"feeds">;
+type FeedInsertDto = TablesInsert<"feeds">;
+
 export interface CreatePostDto {
-  content: string;
+  content: FeedInsertDto["caption"];
   imageFiles: File[];
   taggedUsers?: string[];
   isCommentsDisabled?: boolean;
@@ -11,11 +16,11 @@ export interface CreatePostResponseDto {
   success: boolean;
   message: string;
   post?: {
-    id: string;
-    content: string;
+    id: FeedDto["id"];
+    content: FeedDto["caption"];
     imageUrls: string[];
     taggedUsers: string[];
-    createdAt: string;
+    createdAt: FeedDto["created_at"];
     isCommentsDisabled: boolean;
     isLikesHidden: boolean;
     altText?: string[];

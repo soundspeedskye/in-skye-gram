@@ -1,9 +1,6 @@
-// 피드 좋아요
-export interface FeedLikeDto {
-  feed_id: number;
-  user_id: string;
-  created_at: string;
-}
+import type { Tables } from "@/shared/api/supabase.types";
+
+export type FeedLikeDto = Tables<"feed_likes">;
 
 export interface FeedLikeParams {
   limit?: number;

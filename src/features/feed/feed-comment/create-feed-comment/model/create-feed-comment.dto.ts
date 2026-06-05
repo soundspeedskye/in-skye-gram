@@ -1,5 +1,7 @@
+import type { Tables } from "@/shared/api/supabase.types";
+
 export interface CreateFeedCommentDto {
-  feedId: number;
-  content: string;
-  parentCommentId?: number | null; // 대댓글인 경우 부모 댓글 ID
+  feedId: Tables<"feed_comments">["feed_id"];
+  content: Tables<"feed_comments">["content"];
+  parentCommentId?: Tables<"feed_comments">["parent_comment_id"];
 }

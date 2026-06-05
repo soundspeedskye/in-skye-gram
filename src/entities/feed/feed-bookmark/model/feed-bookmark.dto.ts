@@ -1,9 +1,6 @@
-// 피드 북마크
-export interface FeedBookmarkDto {
-  feed_id: number;
-  user_id: string;
-  created_at: string;
-}
+import type { Tables } from "@/shared/api/supabase.types";
+
+export type FeedBookmarkDto = Tables<"feed_bookmarks">;
 
 export interface FeedBookmarkParams {
   limit?: number;

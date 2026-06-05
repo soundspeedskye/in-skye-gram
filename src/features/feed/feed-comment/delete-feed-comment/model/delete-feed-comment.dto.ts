@@ -1,3 +1,5 @@
+import type { Tables } from "@/shared/api/supabase.types";
+
 export interface DeleteFeedCommentDto {
-  commentId: number;
+  commentId: Tables<"feed_comments">["id"];
 }

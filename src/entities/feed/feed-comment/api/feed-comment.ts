@@ -1,8 +1,5 @@
 import { supabase } from "@/shared/api/supabase";
-import type {
-  FeedCommentDto,
-  FeedCommentWithProfile,
-} from "../model/feed-comment.dto";
+import type { FeedCommentWithProfile } from "../model/feed-comment.dto";
 
 // 댓글 목록 조회
 export const getFeedCommentsWithProfile = async (

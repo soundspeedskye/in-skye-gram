@@ -1,17 +1,12 @@
-// 피드 댓글
-export interface FeedCommentDto {
-  id: number;
-  feed_id: number;
-  user_id: string;
-  content: string;
-  parent_comment_id: number | null;
-  created_at: string;
-}
+import type { Tables } from "@/shared/api/supabase.types";
+
+export type FeedCommentDto = Tables<"feed_comments">;
+export type FeedCommentProfileDto = Pick<
+  Tables<"user_profiles">,
+  "nickname" | "profile_image_url"
+>;
 
 export interface FeedCommentWithProfile extends FeedCommentDto {
-  user_profiles: {
-    nickname: string | null;
-    profile_image_url: string | null;
-  };
-  replies?: FeedCommentWithProfile[]; // 대댓글 목록
+  user_profiles: FeedCommentProfileDto | FeedCommentProfileDto[] | null;
+  replies?: FeedCommentWithProfile[];
 }

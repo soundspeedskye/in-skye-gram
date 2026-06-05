@@ -1,10 +1,6 @@
-// 피드 공유
-export interface FeedShareDto {
-  id: number;
-  feed_id: number;
-  user_id: string;
-  created_at: string;
-}
+import type { Tables } from "@/shared/api/supabase.types";
+
+export type FeedShareDto = Tables<"feed_shares">;
 
 export interface FeedShareParams {
   limit?: number;

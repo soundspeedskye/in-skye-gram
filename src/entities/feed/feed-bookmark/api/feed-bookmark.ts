@@ -1,8 +1,12 @@
 import { supabase } from "@/shared/api/supabase";
+import type { FeedDto } from "@/entities/feed/feed-list/model/feed.dto";
 import type {
   FeedBookmarkDto,
   FeedBookmarkParams,
 } from "../model/feed-bookmark.dto";
+
+const isAuthSessionMissingError = (error: unknown) =>
+  error instanceof Error && error.name === "AuthSessionMissingError";
 
 // 북마크 목록 조회
 export const getFeedBookmarks = async (
@@ -34,6 +38,7 @@ export const getIsBookmarked = async (feedId: number): Promise<boolean> => {
     data: { user },
     error: userError,
   } = await supabase.auth.getUser();
+  if (isAuthSessionMissingError(userError)) return false;
   if (userError) throw userError;
   if (!user) return false;
 
@@ -56,6 +61,7 @@ export const getAreBookmarked = async (
     data: { user },
     error: userError,
   } = await supabase.auth.getUser();
+  if (isAuthSessionMissingError(userError)) return {};
   if (userError) throw userError;
   if (!user) return {};
 
@@ -101,4 +107,26 @@ export const getBookmarkedFeeds = async (
 
   if (error) throw error;
   return data as FeedBookmarkDto[];
+};
+
+export const getBookmarkedFeedList = async (
+  params: FeedBookmarkParams,
+): Promise<FeedDto[]> => {
+  const bookmarks = await getBookmarkedFeeds(params);
+  const feedIds = bookmarks.map((bookmark) => bookmark.feed_id);
+
+  if (feedIds.length === 0) return [];
+
+  const { data, error } = await supabase
+    .from("feeds")
+    .select("*")
+    .in("id", feedIds);
+
+  if (error) throw error;
+
+  const feedById = new Map((data ?? []).map((feed) => [feed.id, feed]));
+
+  return feedIds
+    .map((feedId) => feedById.get(feedId))
+    .filter((feed): feed is FeedDto => Boolean(feed));
 };

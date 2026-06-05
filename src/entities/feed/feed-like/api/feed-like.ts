@@ -1,6 +1,9 @@
 import { supabase } from "@/shared/api/supabase";
 import type { FeedLikeDto, FeedLikeParams } from "../model/feed-like.dto";
 
+const isAuthSessionMissingError = (error: unknown) =>
+  error instanceof Error && error.name === "AuthSessionMissingError";
+
 // 특정 좋아요 확인
 export const getFeedLike = async ({
   feed_id,
@@ -9,6 +12,7 @@ export const getFeedLike = async ({
     data: { user },
     error: userError,
   } = await supabase.auth.getUser();
+  if (isAuthSessionMissingError(userError)) return false;
   if (userError) throw userError;
   if (!user) return false;
 
@@ -31,6 +35,7 @@ export const getFeedLikes = async (
     data: { user },
     error: userError,
   } = await supabase.auth.getUser();
+  if (isAuthSessionMissingError(userError)) return {};
   if (userError) throw userError;
   if (!user) return {};
 
