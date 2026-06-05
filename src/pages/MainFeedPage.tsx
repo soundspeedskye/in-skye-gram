@@ -11,7 +11,7 @@ export default function MainFeedPage() {
       </aside>
 
       {/* 2. 메인 콘텐츠 영역 */}
-      <main className="w-full ml-[72px] md:ml-[160px] transition-all duration-300">
+      <main className="ml-[72px] md:ml-[240px] transition-all duration-300">
         <div className="w-full max-w-[470px] mx-auto px-4 md:px-0">
           {/* 상단 스토리 */}
           <StoryListPage />

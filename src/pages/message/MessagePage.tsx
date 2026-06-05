@@ -37,7 +37,7 @@ export default function MessagePage({
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
@@ -132,7 +132,7 @@ export default function MessagePage({
               placeholder="Message..."
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              onKeyPress={handleKeyPress}
+              onKeyDown={handleKeyDown}
               className="pr-10 border-gray-300 rounded-full"
             />
             <Button
