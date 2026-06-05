@@ -1,9 +1,15 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState } from "react";
-import { Home, Search, MessageCircle, Heart, Plus } from "lucide-react";
+import {
+  Home,
+  Search,
+  MessageCircle,
+  Heart,
+  Plus,
+  UserCircle,
+} from "lucide-react";
 import { cn } from "@/app/style/utils";
 import { Button } from "@/shared/ui/lib/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/lib/avatar";
 import InstagramTextLogo from "@/shared/assets/icons/instagram-text.svg";
 import InstagramIcon from "@/shared/assets/icons/instagram.svg";
 import SearchSheet from "@/widgets/search/ui/SearchSheet";
@@ -11,7 +17,7 @@ import MessageSheet from "@/widgets/message/ui/MessageSheet";
 import MessagePage from "@/pages/message/MessagePage";
 import NotificationSheet from "@/widgets/notification/ui/NotificationSheet";
 import CreatePostForm from "@/features/feed/feed-list/create-feed-list/ui/CreatePostForm";
-import { mockProfile } from "@/shared/mocks/profile";
+import PATHS from "@/app/routing/path";
 
 export default function MainSideBarSheet() {
   const navigate = useNavigate();
@@ -23,27 +29,35 @@ export default function MainSideBarSheet() {
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
 
   const menuItems = [
-    { name: "Home", icon: Home, path: "/" },
-    { name: "Search", icon: Search, path: "/search", hasSheet: true },
+    { name: "Home", icon: Home, path: PATHS.HOME },
+    { name: "Search", icon: Search, path: PATHS.SEARCH, hasSheet: true },
     {
       name: "Messages",
       icon: MessageCircle,
-      path: "/messages",
+      path: PATHS.MESSAGE,
       hasSheet: true,
     },
     {
       name: "Notifications",
       icon: Heart,
-      path: "/notifications",
+      path: PATHS.NOTIFICATIONS,
       hasSheet: true,
     },
     {
       name: "Create",
       icon: Plus,
-      path: "/create",
+      path: PATHS.POST_CREATE,
       hasSheet: true,
     },
   ];
+
+  const closeSheets = () => {
+    setSearchSheetOpen(false);
+    setMessageSheetOpen(false);
+    setNotificationSheetOpen(false);
+    setCreatePostSheetOpen(false);
+    setSelectedChatId(null);
+  };
 
   const handleNavigation = (
     path: string,
@@ -51,6 +65,8 @@ export default function MainSideBarSheet() {
     name?: string,
   ) => {
     if (hasSheet) {
+      closeSheets();
+
       if (name === "Search") {
         setSearchSheetOpen(true);
       } else if (name === "Messages") {
@@ -61,6 +77,7 @@ export default function MainSideBarSheet() {
         setCreatePostSheetOpen(true);
       }
     } else {
+      closeSheets();
       navigate(path);
     }
   };
@@ -134,19 +151,11 @@ export default function MainSideBarSheet() {
             variant="ghost"
             className={cn(
               "w-full justify-center md:justify-start px-3 py-4 md:py-3 bg-transparent hover:bg-transparent",
-              location.pathname === "/profile" ? "font-semibold" : "",
+              location.pathname === PATHS.PROFILE ? "font-semibold" : "",
             )}
-            onClick={() => navigate("/profile")}
+            onClick={() => handleNavigation(PATHS.PROFILE)}
           >
-            <Avatar className="w-11 h-11 shrink-0 md:mr-4">
-              <AvatarImage
-                src={mockProfile.avatar}
-                alt={mockProfile.username}
-              />
-              <AvatarFallback>
-                {mockProfile.username[0]?.toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
+            <UserCircle className="w-11 h-11 shrink-0 transition-all md:mr-4" />
             {/* 텍스트: md 이상에서만 표시 */}
             <span className="hidden overflow-hidden text-base md:block whitespace-nowrap">
               Profile
@@ -161,17 +170,12 @@ export default function MainSideBarSheet() {
         createPostSheetOpen) && (
         <div
           className="fixed inset-0 z-30 bg-black/20"
-          onClick={() => {
-            setSearchSheetOpen(false);
-            setMessageSheetOpen(false);
-            setNotificationSheetOpen(false);
-            setCreatePostSheetOpen(false);
-          }}
+          onClick={closeSheets}
         />
-      )}{" "}
+      )}
       {/* Search Sheet - overlay로 표시 */}
       {searchSheetOpen && (
-        <div className="fixed top-0 left-[72px] md:left-[240px] z-40 h-full w-[400px] bg-white border-r border-gray-200 shadow-xl animate-in slide-in-from-left duration-300">
+        <div className="fixed top-0 left-[72px] md:left-[240px] z-40 h-full w-[calc(100vw-72px)] max-w-[400px] md:w-[400px] bg-white border-r border-gray-200 shadow-xl animate-in slide-in-from-left duration-300">
           <div className="h-full overflow-hidden">
             <SearchSheet
               isOpen={searchSheetOpen}
@@ -183,9 +187,16 @@ export default function MainSideBarSheet() {
       )}
       {/* Message Sheet - overlay로 표시 */}
       {messageSheetOpen && (
-        <div className="fixed top-0 left-[72px] md:left-[240px] z-40 h-full flex bg-white border-r border-gray-200 shadow-xl animate-in slide-in-from-left duration-300">
+        <div className="fixed top-0 left-[72px] md:left-[240px] z-40 flex h-full w-[calc(100vw-72px)] overflow-hidden bg-white border-r border-gray-200 shadow-xl animate-in slide-in-from-left duration-300 md:w-[calc(100vw-240px)] xl:w-[1000px]">
           {/* MessageSheet 항상 표시 */}
-          <div className="w-[400px] border-r border-gray-200">
+          <div
+            className={cn(
+              "border-r border-gray-200",
+              selectedChatId
+                ? "hidden md:block md:w-[400px] md:shrink-0"
+                : "w-full md:w-[400px]",
+            )}
+          >
             <div className="h-full overflow-hidden">
               <MessageSheet
                 isOpen={messageSheetOpen}
@@ -202,7 +213,7 @@ export default function MainSideBarSheet() {
 
           {/* MessagePage - chat 선택 시에만 표시 */}
           {selectedChatId && (
-            <div className="w-[600px] animate-in slide-in-from-right duration-300">
+            <div className="min-w-0 flex-1 animate-in slide-in-from-right duration-300">
               <div className="h-full overflow-hidden">
                 <MessagePage
                   selectedChatId={selectedChatId}
@@ -215,7 +226,7 @@ export default function MainSideBarSheet() {
       )}
       {/* Notification Sheet - overlay로 표시 */}
       {notificationSheetOpen && (
-        <div className="fixed top-0 left-[72px] md:left-[280px] z-40 h-full w-[400px] bg-white border-r border-gray-200 shadow-xl animate-in slide-in-from-left duration-300">
+        <div className="fixed top-0 left-[72px] md:left-[240px] z-40 h-full w-[calc(100vw-72px)] max-w-[400px] md:w-[400px] bg-white border-r border-gray-200 shadow-xl animate-in slide-in-from-left duration-300">
           <div className="h-full overflow-hidden">
             <NotificationSheet
               isOpen={notificationSheetOpen}
@@ -227,7 +238,7 @@ export default function MainSideBarSheet() {
       )}
       {/* Create Post Sheet - overlay로 표시 */}
       {createPostSheetOpen && (
-        <div className="fixed top-0 left-[72px] md:left-[280px] z-40 h-full w-[500px] bg-white border-r border-gray-200 shadow-xl animate-in slide-in-from-left duration-300">
+        <div className="fixed top-0 left-[72px] md:left-[240px] z-40 h-full w-[calc(100vw-72px)] max-w-[500px] md:w-[500px] bg-white border-r border-gray-200 shadow-xl animate-in slide-in-from-left duration-300">
           <div className="h-full overflow-hidden">
             <CreatePostForm
               onClose={() => setCreatePostSheetOpen(false)}

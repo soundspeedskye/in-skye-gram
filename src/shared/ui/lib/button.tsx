@@ -19,8 +19,9 @@ const buttonVariants = cva(
           "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
         link: "text-primary underline-offset-4 hover:underline",
         // auth 관련 버튼
-        auth: "bg-#4a5ef9 text-white hover:bg-#4a5ef9/90 focus-visible:ring-#4a5ef9/20 dark:focus-visible:ring-#4a5ef9/40 dark:bg-#4a5ef9/60",
-        post: "bg-transparent p-0 hover:bg-transparent text-gray-900",
+        auth: "bg-[#4a5ef9] text-white hover:bg-[#4a5ef9]/90 focus-visible:ring-[#4a5ef9]/20 dark:focus-visible:ring-[#4a5ef9]/40 dark:bg-[#4a5ef9]/60",
+        post:
+          "border-0 bg-transparent p-0 text-gray-900 hover:border-transparent hover:bg-transparent focus:outline-none focus-visible:outline-none",
       },
       size: {
         default: "h-9 px-4 py-2 has-[>svg]:px-3",
