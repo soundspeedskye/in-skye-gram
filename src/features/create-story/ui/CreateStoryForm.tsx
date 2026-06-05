@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/shared/ui/lib/button";
 import { Camera, Video, Type, X, Upload } from "lucide-react";
 import type { CreateStoryDto } from "@/features/create-story/model/create-story.dto";
@@ -19,6 +19,7 @@ const CreateStoryForm = ({
   );
   const [content, setContent] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   const [allowReplies, setAllowReplies] = useState(true);
   const [allowSharing, setAllowSharing] = useState(true);
@@ -26,6 +27,25 @@ const CreateStoryForm = ({
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
+  const previewUrlRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (previewUrlRef.current) {
+        URL.revokeObjectURL(previewUrlRef.current);
+      }
+    };
+  }, []);
+
+  const replacePreviewUrl = (file: File | null) => {
+    if (previewUrlRef.current) {
+      URL.revokeObjectURL(previewUrlRef.current);
+    }
+
+    const nextPreviewUrl = file ? URL.createObjectURL(file) : null;
+    previewUrlRef.current = nextPreviewUrl;
+    setPreviewUrl(nextPreviewUrl);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -78,6 +98,7 @@ const CreateStoryForm = ({
 
       if (isValidType) {
         setSelectedFile(file);
+        replacePreviewUrl(file);
       } else {
         alert(
           `${
@@ -86,15 +107,21 @@ const CreateStoryForm = ({
         );
       }
     }
+    e.target.value = "";
   };
 
   const removeFile = () => {
     setSelectedFile(null);
+    replacePreviewUrl(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
     if (videoInputRef.current) videoInputRef.current.value = "";
   };
 
-  const previewUrl = selectedFile ? URL.createObjectURL(selectedFile) : null;
+  const handleStoryTypeChange = (nextStoryType: "image" | "video" | "text") => {
+    if (nextStoryType === storyType) return;
+    setStoryType(nextStoryType);
+    removeFile();
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
@@ -124,7 +151,7 @@ const CreateStoryForm = ({
                 type="button"
                 variant={storyType === "image" ? "default" : "outline"}
                 size="sm"
-                onClick={() => setStoryType("image")}
+                onClick={() => handleStoryTypeChange("image")}
                 className="flex-1 gap-2"
               >
                 <Camera className="w-4 h-4" />
@@ -134,7 +161,7 @@ const CreateStoryForm = ({
                 type="button"
                 variant={storyType === "video" ? "default" : "outline"}
                 size="sm"
-                onClick={() => setStoryType("video")}
+                onClick={() => handleStoryTypeChange("video")}
                 className="flex-1 gap-2"
               >
                 <Video className="w-4 h-4" />
@@ -144,7 +171,7 @@ const CreateStoryForm = ({
                 type="button"
                 variant={storyType === "text" ? "default" : "outline"}
                 size="sm"
-                onClick={() => setStoryType("text")}
+                onClick={() => handleStoryTypeChange("text")}
                 className="flex-1 gap-2"
               >
                 <Type className="w-4 h-4" />
@@ -179,17 +206,17 @@ const CreateStoryForm = ({
                 className="hidden"
               />
 
-              {selectedFile ? (
+              {selectedFile && previewUrl ? (
                 <div className="relative aspect-[9/16] rounded-lg overflow-hidden bg-gray-100">
                   {storyType === "image" ? (
                     <img
-                      src={previewUrl!}
+                      src={previewUrl}
                       alt="Preview"
                       className="object-cover w-full h-full"
                     />
                   ) : (
                     <video
-                      src={previewUrl!}
+                      src={previewUrl}
                       className="object-cover w-full h-full"
                       controls
                     />

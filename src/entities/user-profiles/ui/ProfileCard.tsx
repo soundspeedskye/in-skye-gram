@@ -4,15 +4,15 @@ import { Settings, UserCheck } from "lucide-react";
 import type { UserProfilesDto } from "../model/user-profiles.dto";
 
 interface Props {
-  profile: UserProfilesDto;
+  userProfile: UserProfilesDto;
   onEditProfile: () => void;
 }
 
-const ProfileCard = ({ profile, onEditProfile }: Props) => {
-  const displayName = profile.nickname || "익명 사용자";
+const ProfileCard = ({ userProfile, onEditProfile }: Props) => {
+  const displayName = userProfile.nickname || "익명 사용자";
   const displayImage =
-    profile.profile_image_url ||
-    `https://picsum.photos/160/160?random=${profile.user_id}`;
+    userProfile.profile_image_url ||
+    `https://picsum.photos/160/160?random=${userProfile.user_id}`;
 
   return (
     <div className="flex flex-col gap-6 mb-6 md:flex-row">
@@ -48,18 +48,20 @@ const ProfileCard = ({ profile, onEditProfile }: Props) => {
         {/* 통계 */}
         <div className="flex justify-center gap-8 mb-4 md:justify-start">
           <div className="text-center">
-            <span className="block font-semibold">{profile.post_count}</span>
+            <span className="block font-semibold">
+              {userProfile.post_count}
+            </span>
             <span className="text-sm text-gray-600">posts</span>
           </div>
           <div className="text-center">
             <span className="block font-semibold">
-              {profile.follower_count.toLocaleString()}
+              {userProfile.follower_count.toLocaleString()}
             </span>
             <span className="text-sm text-gray-600">followers</span>
           </div>
           <div className="text-center">
             <span className="block font-semibold">
-              {profile.following_count}
+              {userProfile.following_count}
             </span>
             <span className="text-sm text-gray-600">following</span>
           </div>
@@ -67,8 +69,10 @@ const ProfileCard = ({ profile, onEditProfile }: Props) => {
 
         {/* 프로필 정보 */}
         <div className="space-y-1">
-          {profile.description && (
-            <p className="text-sm whitespace-pre-wrap">{profile.description}</p>
+          {userProfile.description && (
+            <p className="text-sm whitespace-pre-wrap">
+              {userProfile.description}
+            </p>
           )}
         </div>
       </div>

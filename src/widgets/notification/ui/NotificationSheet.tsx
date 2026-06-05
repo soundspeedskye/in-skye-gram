@@ -3,7 +3,17 @@ import { X, Heart, MessageCircle, UserPlus, Camera } from "lucide-react";
 import { Button } from "@/shared/ui/lib/button";
 import { Avatar } from "@/shared/ui/lib/avatar";
 import { cn } from "@/app/style/utils";
-import { mockNotifications } from "@/shared/mocks/notification";
+import {
+  mockNotifications,
+  type Notification,
+} from "@/shared/mocks/notification";
+
+type NotificationTab = "all" | "following";
+
+const notificationTabs: { key: NotificationTab; label: string }[] = [
+  { key: "all", label: "All" },
+  { key: "following", label: "Following" },
+];
 
 interface NotificationSheetProps {
   isOpen: boolean;
@@ -15,14 +25,10 @@ export default function NotificationSheet({
   onClose,
   isEmbedded = false,
 }: NotificationSheetProps) {
-  const [activeTab, setActiveTab] = useState<"all" | "following">("all");
+  const [activeTab, setActiveTab] = useState<NotificationTab>("all");
 
-  const filteredNotifications = mockNotifications.filter(
-    (notification: any) => {
-      if (activeTab === "all") return true;
-      if (activeTab === "following") return notification.isFollowing;
-      return true;
-    }
+  const filteredNotifications = mockNotifications.filter((notification) =>
+    activeTab === "all" ? true : Boolean(notification.isFollowing),
   );
 
   const getNotificationIcon = (type: string) => {
@@ -69,15 +75,12 @@ export default function NotificationSheet({
       {/* Filter Tabs */}
       <div className="px-6 py-4 border-b">
         <div className="flex space-x-2">
-          {[
-            { key: "all", label: "All" },
-            { key: "following", label: "Following" },
-          ].map((tab) => (
+          {notificationTabs.map((tab) => (
             <Button
               key={tab.key}
               variant={activeTab === tab.key ? "default" : "ghost"}
               size="sm"
-              onClick={() => setActiveTab(tab.key as any)}
+              onClick={() => setActiveTab(tab.key)}
               className={cn(
                 "text-sm font-medium",
                 activeTab === tab.key
@@ -95,7 +98,7 @@ export default function NotificationSheet({
       <div className="flex-1 overflow-y-auto">
         {filteredNotifications.length > 0 ? (
           <div className="pb-4">
-            {filteredNotifications.map((notification: any) => (
+            {filteredNotifications.map((notification: Notification) => (
               <div
                 key={notification.id}
                 className={cn(
@@ -127,10 +130,10 @@ export default function NotificationSheet({
                       </div>
                     )}
                   </div>
-                  <p className="flex text-sm text-gray-600 truncate flex-start">
+                  <p className="flex truncate text-sm text-gray-600">
                     {notification.message}
                   </p>
-                  <p className="flex mt-1 text-xs text-gray-400 flex-start">
+                  <p className="mt-1 flex text-xs text-gray-400">
                     {getTimeAgo(notification.timestamp)}
                   </p>
                 </div>

@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/shared/ui/lib/button";
 import { Input } from "@/shared/ui/lib/input";
 import { Send, Image, Smile } from "lucide-react";
@@ -6,7 +6,7 @@ import type { CreateMessageDto } from "@/features/create-message/model/create-me
 
 interface CreateMessageFormProps {
   recipientId: string;
-  onSubmit: (data: CreateMessageDto) => void;
+  onSubmit: (data: CreateMessageDto) => void | Promise<void>;
   disabled?: boolean;
   placeholder?: string;
 }
@@ -20,11 +20,29 @@ const CreateMessageForm = ({
   const [content, setContent] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const imagePreviewUrlRef = useRef<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  useEffect(() => {
+    return () => {
+      if (imagePreviewUrlRef.current) {
+        URL.revokeObjectURL(imagePreviewUrlRef.current);
+      }
+    };
+  }, []);
 
+  const replaceImagePreviewUrl = (file: File | null) => {
+    if (imagePreviewUrlRef.current) {
+      URL.revokeObjectURL(imagePreviewUrlRef.current);
+    }
+
+    const nextPreviewUrl = file ? URL.createObjectURL(file) : null;
+    imagePreviewUrlRef.current = nextPreviewUrl;
+    setImagePreviewUrl(nextPreviewUrl);
+  };
+
+  const submitMessage = async () => {
     if ((!content.trim() && !selectedImage) || isSubmitting) return;
 
     setIsSubmitting(true);
@@ -42,6 +60,7 @@ const CreateMessageForm = ({
       // 성공 시 폼 클리어
       setContent("");
       setSelectedImage(null);
+      replaceImagePreviewUrl(null);
     } catch (error) {
       console.error("메시지 전송 실패:", error);
     } finally {
@@ -49,10 +68,15 @@ const CreateMessageForm = ({
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    void submitMessage();
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      handleSubmit(e as any);
+      void submitMessage();
     }
   };
 
@@ -60,18 +84,21 @@ const CreateMessageForm = ({
     const file = e.target.files?.[0];
     if (file && file.type.startsWith("image/")) {
       setSelectedImage(file);
+      replaceImagePreviewUrl(file);
     }
+    e.target.value = "";
   };
 
   const removeImage = () => {
     setSelectedImage(null);
+    replaceImagePreviewUrl(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
   };
 
   const canSubmit =
-    (content.trim() || selectedImage) && !isSubmitting && !disabled;
+    Boolean(content.trim() || selectedImage) && !isSubmitting && !disabled;
 
   return (
     <div className="bg-white border-t">
@@ -79,11 +106,13 @@ const CreateMessageForm = ({
       {selectedImage && (
         <div className="p-3 border-b bg-gray-50">
           <div className="relative inline-block">
-            <img
-              src={URL.createObjectURL(selectedImage)}
-              alt="Preview"
-              className="object-cover w-20 h-20 rounded-lg"
-            />
+            {imagePreviewUrl && (
+              <img
+                src={imagePreviewUrl}
+                alt="Preview"
+                className="object-cover w-20 h-20 rounded-lg"
+              />
+            )}
             <Button
               type="button"
               variant="ghost"
@@ -123,7 +152,7 @@ const CreateMessageForm = ({
           <Input
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            onKeyPress={handleKeyPress}
+            onKeyDown={handleKeyDown}
             placeholder={placeholder}
             disabled={disabled || isSubmitting}
             className="px-4 py-2 pr-12 border-2 border-gray-300 rounded-full resize-none focus:border-gray-400"

@@ -1,4 +1,5 @@
-import React, { useState, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { z } from "zod";
 import { Button } from "@/shared/ui/lib/button";
 import { Input } from "@/shared/ui/lib/input";
 import { Label } from "@/shared/ui/lib/label";
@@ -23,12 +24,39 @@ const CreatePostForm = ({ onSubmit, onClose, isEmbedded = false }: Props) => {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const previewUrlsRef = useRef<string[]>([]);
+
+  useEffect(() => {
+    return () => {
+      previewUrlsRef.current.forEach((previewUrl) => {
+        URL.revokeObjectURL(previewUrl);
+      });
+      previewUrlsRef.current = [];
+    };
+  }, []);
+
+  const clearImagePreviews = () => {
+    previewUrlsRef.current.forEach((previewUrl) => {
+      URL.revokeObjectURL(previewUrl);
+    });
+    previewUrlsRef.current = [];
+    setImagePreviews([]);
+  };
 
   const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
+    event.target.value = "";
+
+    if (files.some((file) => !file.type.startsWith("image/"))) {
+      setErrors((prev) => ({
+        ...prev,
+        images: "이미지 파일만 선택할 수 있습니다.",
+      }));
+      return;
+    }
 
     if (files.length + selectedImages.length > 10) {
-      setErrors({ ...errors, images: "Maximum 10 images allowed" });
+      setErrors((prev) => ({ ...prev, images: "Maximum 10 images allowed" }));
       return;
     }
 
@@ -37,8 +65,9 @@ const CreatePostForm = ({ onSubmit, onClose, isEmbedded = false }: Props) => {
 
     // Create preview URLs
     const newPreviews = files.map((file) => URL.createObjectURL(file));
+    previewUrlsRef.current = [...previewUrlsRef.current, ...newPreviews];
     setImagePreviews((prev) => [...prev, ...newPreviews]);
-    setErrors({ ...errors, images: "" });
+    setErrors((prev) => ({ ...prev, images: "" }));
   };
 
   const removeImage = (index: number) => {
@@ -47,6 +76,9 @@ const CreatePostForm = ({ onSubmit, onClose, isEmbedded = false }: Props) => {
 
     // Revoke URL to prevent memory leaks
     URL.revokeObjectURL(imagePreviews[index]);
+    previewUrlsRef.current = previewUrlsRef.current.filter(
+      (previewUrl) => previewUrl !== imagePreviews[index],
+    );
 
     setSelectedImages(newImages);
     setImagePreviews(newPreviews);
@@ -75,7 +107,7 @@ const CreatePostForm = ({ onSubmit, onClose, isEmbedded = false }: Props) => {
       // Reset form
       setContent("");
       setSelectedImages([]);
-      setImagePreviews([]);
+      clearImagePreviews();
       setLocation("");
       setIsCommentsDisabled(false);
       setIsLikesHidden(false);
@@ -83,11 +115,14 @@ const CreatePostForm = ({ onSubmit, onClose, isEmbedded = false }: Props) => {
       if (onClose) {
         onClose();
       }
-    } catch (error: any) {
-      if (error.errors) {
+    } catch (error) {
+      if (error instanceof z.ZodError) {
         const formErrors: Record<string, string> = {};
-        error.errors.forEach((err: any) => {
-          formErrors[err.path[0]] = err.message;
+        error.issues.forEach((err) => {
+          const field = err.path[0];
+          if (typeof field === "string") {
+            formErrors[field] = err.message;
+          }
         });
         setErrors(formErrors);
       }
@@ -127,7 +162,7 @@ const CreatePostForm = ({ onSubmit, onClose, isEmbedded = false }: Props) => {
       <form id="create-post-form" onSubmit={handleSubmit} className="p-4">
         {/* Image Upload */}
         <div className="mb-6">
-          <Label className="block mb-2 text-sm font-medium">사진/동영상</Label>
+          <Label className="block mb-2 text-sm font-medium">사진</Label>
 
           {selectedImages.length === 0 ? (
             <div
@@ -136,7 +171,7 @@ const CreatePostForm = ({ onSubmit, onClose, isEmbedded = false }: Props) => {
             >
               <ImageIcon className="w-12 h-12 mx-auto mb-2 text-gray-400" />
               <p className="text-gray-600">
-                사진과 동영상을 여기에 끌어다 놓으세요
+                사진을 여기에 끌어다 놓으세요
               </p>
               <p className="mt-1 text-sm text-gray-500">또는 클릭하여 선택</p>
             </div>
@@ -175,7 +210,7 @@ const CreatePostForm = ({ onSubmit, onClose, isEmbedded = false }: Props) => {
             ref={fileInputRef}
             type="file"
             multiple
-            accept="image/*,video/*"
+            accept="image/*"
             onChange={handleImageSelect}
             className="hidden"
           />

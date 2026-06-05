@@ -1,8 +1,8 @@
 import { useAuthListener } from "@/shared/hooks/use-auth-listener";
-import { Outlet, useLocation } from "react-router-dom";
+import { Outlet } from "react-router-dom";
 
 export default function RootLayout() {
-  const location = useLocation();
+  // const location = useLocation();
 
   useAuthListener();
 

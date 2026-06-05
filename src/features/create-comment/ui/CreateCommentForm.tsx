@@ -4,7 +4,7 @@ import type { CreateCommentDto } from "@/features/create-comment/model/create-co
 
 interface CreateCommentFormProps {
   postId: string;
-  onSubmit: (data: CreateCommentDto) => void;
+  onSubmit: (data: CreateCommentDto) => void | Promise<void>;
   placeholder?: string;
   disabled?: boolean;
 }
@@ -18,19 +18,17 @@ const CreateCommentForm = ({
   const [comment, setComment] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
+  const submitComment = async () => {
     if (!comment.trim() || isSubmitting) return;
 
     setIsSubmitting(true);
-    
+
     try {
       await onSubmit({
         postId,
         content: comment.trim(),
       });
-      
+
       // 성공 시 입력 필드 클리어
       setComment("");
     } catch (error) {
@@ -40,10 +38,15 @@ const CreateCommentForm = ({
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    void submitComment();
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      handleSubmit(e as any);
+      void submitComment();
     }
   };
 
@@ -53,7 +56,7 @@ const CreateCommentForm = ({
         type="text"
         value={comment}
         onChange={(e) => setComment(e.target.value)}
-        onKeyPress={handleKeyPress}
+        onKeyDown={handleKeyDown}
         placeholder={placeholder}
         disabled={disabled || isSubmitting}
         className="flex-1 text-sm outline-none placeholder:text-gray-500 disabled:opacity-50"

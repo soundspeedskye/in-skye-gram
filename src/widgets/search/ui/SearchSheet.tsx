@@ -5,7 +5,16 @@ import { Button } from "@/shared/ui/lib/button";
 import { Input } from "@/shared/ui/lib/input";
 import { Avatar } from "@/shared/ui/lib/avatar";
 import { cn } from "@/app/style/utils";
-import { mockSearchResults } from "@/shared/mocks/search";
+import { mockSearchResults, type SearchResult } from "@/shared/mocks/search";
+
+type SearchTab = "all" | "accounts" | "hashtags" | "places";
+
+const searchTabs: { key: SearchTab; label: string }[] = [
+  { key: "all", label: "All" },
+  { key: "accounts", label: "Accounts" },
+  { key: "hashtags", label: "Hashtags" },
+  { key: "places", label: "Places" },
+];
 
 interface SearchSheetProps {
   isOpen: boolean;
@@ -19,19 +28,29 @@ export default function SearchSheet({
   isEmbedded = false,
 }: SearchSheetProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeTab, setActiveTab] = useState<
-    "all" | "accounts" | "hashtags" | "places"
-  >("all");
+  const [activeTab, setActiveTab] = useState<SearchTab>("all");
+  const normalizedQuery = searchQuery.trim().toLowerCase();
 
   const filteredResults = mockSearchResults.filter((result) => {
-    if (activeTab === "all") return true;
-    if (activeTab === "accounts") return result.type === "user";
-    if (activeTab === "hashtags") return result.type === "hashtag";
-    if (activeTab === "places") return result.type === "location";
-    return true;
+    const matchesTab =
+      activeTab === "all" ||
+      (activeTab === "accounts" && result.type === "user") ||
+      (activeTab === "hashtags" && result.type === "hashtag") ||
+      (activeTab === "places" && result.type === "location");
+
+    if (!matchesTab) return false;
+    if (!normalizedQuery) return true;
+
+    if (result.type === "user") {
+      return [result.username, result.fullName].some((value) =>
+        value.toLowerCase().includes(normalizedQuery),
+      );
+    }
+
+    return result.name.toLowerCase().includes(normalizedQuery);
   });
 
-  const renderSearchResult = (result: any) => {
+  const renderSearchResult = (result: SearchResult) => {
     switch (result.type) {
       case "user":
         return (
@@ -127,17 +146,12 @@ export default function SearchSheet({
       {/* Filter Tabs */}
       <div className="px-6 py-4">
         <div className="flex space-x-2">
-          {[
-            { key: "all", label: "All" },
-            { key: "accounts", label: "Accounts" },
-            { key: "hashtags", label: "Hashtags" },
-            { key: "places", label: "Places" },
-          ].map((tab) => (
+          {searchTabs.map((tab) => (
             <Button
               key={tab.key}
               variant={activeTab === tab.key ? "default" : "ghost"}
               size="sm"
-              onClick={() => setActiveTab(tab.key as any)}
+              onClick={() => setActiveTab(tab.key)}
               className={cn(
                 "text-sm font-medium",
                 activeTab === tab.key
@@ -153,7 +167,7 @@ export default function SearchSheet({
 
       {/* Search Results */}
       <div className="flex-1 overflow-y-auto">
-        {searchQuery.length > 0 ? (
+        {normalizedQuery.length > 0 ? (
           <div className="pb-6">
             {filteredResults.length > 0 ? (
               filteredResults.map(renderSearchResult)

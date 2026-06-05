@@ -1,13 +1,13 @@
 import { Button } from "@/shared/ui/lib/button";
 import { Card, CardContent } from "@/shared/ui/lib/card";
 import { Grid3x3, Bookmark, Heart, MessageCircle } from "lucide-react";
-import type { PostDto } from "@/entities/feed/feed-list/model/feed.dto";
+import type { FeedDto } from "@/entities/feed/feed-list/model/feed.dto";
 
 interface MyPostCardProps {
-  posts: PostDto[];
+  posts: FeedDto[];
   activeTab?: "posts" | "saved";
   onTabChange?: (tab: "posts" | "saved") => void;
-  onPostClick?: (post: PostDto) => void;
+  onPostClick?: (post: FeedDto) => void;
 }
 
 const MyPostCard = ({
@@ -59,8 +59,8 @@ const MyPostCard = ({
             >
               <CardContent className="p-0 h-full relative">
                 <img
-                  src={post.postImage}
-                  alt={`Post by ${post.username}`}
+                  src={post.images[0]}
+                  alt={`Post by ${post.user_id}`}
                   className="w-full h-full object-cover group-hover:opacity-75 transition-opacity"
                 />
 
@@ -70,13 +70,13 @@ const MyPostCard = ({
                     <div className="flex items-center gap-1">
                       <Heart className="w-6 h-6 fill-current" />
                       <span className="font-semibold">
-                        {post.likes?.toLocaleString() || 0}
+                        {post.likes_count?.toLocaleString() || 0}
                       </span>
                     </div>
                     <div className="flex items-center gap-1">
                       <MessageCircle className="w-6 h-6 fill-current" />
                       <span className="font-semibold">
-                        {post.comments?.length || 0}
+                        {post.comments_count?.toLocaleString() || 0}
                       </span>
                     </div>
                   </div>
