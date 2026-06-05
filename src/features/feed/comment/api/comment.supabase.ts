@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { supabase } from '@/shared/api/supabase';
 import { requireCurrentUser } from '@/shared/api/auth-utils';
 import type { Tables, Camelize } from '@/shared/api/types';

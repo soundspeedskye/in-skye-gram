@@ -1,13 +1,12 @@
-import type { FeedLikeDto } from "@/entities/feed/feed-like/model/feed-like.dto";
+import { requireCurrentUser } from "@/shared/api/auth-utils";
 import { supabase } from "@/shared/api/supabase";
+import type { Camelize, Tables } from "@/shared/api/types";
+import { toCamelCase } from "@/shared/lib/utils/case";
 
-export const createFeedLike = async (feed_id: number): Promise<FeedLikeDto> => {
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
-  if (userError) throw userError;
-  if (!user) throw new Error("User not authenticated");
+export type FeedLike = Camelize<Tables<"feed_likes">>;
+
+export const createFeedLike = async (feed_id: number): Promise<FeedLike> => {
+  const user = await requireCurrentUser();
 
   const { data, error } = await supabase
     .from("feed_likes")
@@ -24,5 +23,5 @@ export const createFeedLike = async (feed_id: number): Promise<FeedLikeDto> => {
     }
     throw error;
   }
-  return data as FeedLikeDto;
+  return toCamelCase<FeedLike>(data);
 };

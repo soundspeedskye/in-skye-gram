@@ -1,18 +1,16 @@
 // 피드 북마크 추가
 
-import type { FeedBookmarkDto } from "@/entities/feed/feed-bookmark/model/feed-bookmark.dto";
+import { requireCurrentUser } from "@/shared/api/auth-utils";
 import { supabase } from "@/shared/api/supabase";
+import type { Camelize, Tables } from "@/shared/api/types";
+import { toCamelCase } from "@/shared/lib/utils/case";
+
+export type FeedBookmark = Camelize<Tables<"feed_bookmarks">>;
 
 export const createFeedBookmark = async (
   feedId: number,
-): Promise<FeedBookmarkDto> => {
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
-
-  if (userError) throw userError;
-  if (!user) throw new Error("User not authenticated");
+): Promise<FeedBookmark> => {
+  const user = await requireCurrentUser();
 
   const { data, error } = await supabase
     .from("feed_bookmarks")
@@ -31,5 +29,5 @@ export const createFeedBookmark = async (
     throw error;
   }
 
-  return data as FeedBookmarkDto;
+  return toCamelCase<FeedBookmark>(data);
 };

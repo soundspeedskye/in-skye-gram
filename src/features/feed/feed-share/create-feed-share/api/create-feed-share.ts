@@ -1,15 +1,14 @@
-import type { FeedShareDto } from "@/entities/feed/feed-share/model/feed-share.dto";
+import { requireCurrentUser } from "@/shared/api/auth-utils";
 import { supabase } from "@/shared/api/supabase";
+import type { Camelize, Tables } from "@/shared/api/types";
+import { toCamelCase } from "@/shared/lib/utils/case";
+
+export type FeedShare = Camelize<Tables<"feed_shares">>;
 
 export const createFeedShare = async (
   feed_id: number,
-): Promise<FeedShareDto> => {
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
-  if (userError) throw userError;
-  if (!user) throw new Error("User not authenticated");
+): Promise<FeedShare> => {
+  const user = await requireCurrentUser();
 
   // insert만 수행 → 중복 허용
   const { data, error } = await supabase
@@ -19,5 +18,5 @@ export const createFeedShare = async (
     .single(); // 한 행만 반환
 
   if (error) throw error;
-  return data as FeedShareDto;
+  return toCamelCase<FeedShare>(data);
 };

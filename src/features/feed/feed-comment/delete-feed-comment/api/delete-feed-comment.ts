@@ -1,15 +1,11 @@
+import { requireCurrentUser } from "@/shared/api/auth-utils";
 import { supabase } from "@/shared/api/supabase";
 import type { DeleteFeedCommentDto } from "../model/delete-feed-comment.dto";
 
 export const deleteFeedComment = async ({
   commentId,
 }: DeleteFeedCommentDto): Promise<void> => {
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
-  if (userError) throw userError;
-  if (!user) throw new Error("User not authenticated");
+  const user = await requireCurrentUser();
 
   // 본인 댓글인지 확인 및 feed_id 가져오기
   const { data: existingComment, error: fetchError } = await supabase

@@ -1,12 +1,8 @@
+import { requireCurrentUser } from "@/shared/api/auth-utils";
 import { supabase } from "@/shared/api/supabase";
 
 export const deleteFeedLike = async (feed_id: number): Promise<void> => {
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
-  if (userError) throw userError;
-  if (!user) throw new Error("User not authenticated");
+  const user = await requireCurrentUser();
 
   const { error } = await supabase
     .from("feed_likes")

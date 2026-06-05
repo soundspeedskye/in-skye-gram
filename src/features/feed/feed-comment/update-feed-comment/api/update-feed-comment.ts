@@ -1,16 +1,15 @@
-import type { FeedCommentDto } from "@/entities/feed/feed-comment/model/feed-comment.dto";
+import { requireCurrentUser } from "@/shared/api/auth-utils";
 import { supabase } from "@/shared/api/supabase";
+import type { Camelize, Tables } from "@/shared/api/types";
+import { toCamelCase } from "@/shared/lib/utils/case";
 import type { UpdateFeedCommentDto } from "../model/update-feed-comment.dto";
+
+export type FeedComment = Camelize<Tables<"feed_comments">>;
 
 export const updateFeedComment = async (
   params: UpdateFeedCommentDto,
-): Promise<FeedCommentDto> => {
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
-  if (userError) throw userError;
-  if (!user) throw new Error("User not authenticated");
+): Promise<FeedComment> => {
+  const user = await requireCurrentUser();
 
   // 본인 댓글인지 확인
   const { data: existingComment, error: fetchError } = await supabase
@@ -32,5 +31,5 @@ export const updateFeedComment = async (
     .single();
 
   if (error) throw error;
-  return data as FeedCommentDto;
+  return toCamelCase<FeedComment>(data);
 };
