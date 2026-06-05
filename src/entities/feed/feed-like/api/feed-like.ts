@@ -1,25 +1,16 @@
 import { supabase } from "@/shared/api/supabase";
+import { getCurrentUser, requireCurrentUser } from "@/shared/api/auth-utils";
 import type { FeedLikeDto, FeedLikeParams } from "../model/feed-like.dto";
 
-const isAuthSessionMissingError = (error: unknown) =>
-  error instanceof Error && error.name === "AuthSessionMissingError";
-
 // 특정 좋아요 확인
-export const getFeedLike = async ({
-  feed_id,
-}: FeedLikeDto): Promise<boolean> => {
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
-  if (isAuthSessionMissingError(userError)) return false;
-  if (userError) throw userError;
+export const getFeedLike = async (feedId: number): Promise<boolean> => {
+  const user = await getCurrentUser();
   if (!user) return false;
 
   const { data, error } = await supabase
     .from("feed_likes")
     .select("feed_id")
-    .eq("feed_id", feed_id)
+    .eq("feed_id", feedId)
     .eq("user_id", user.id)
     .maybeSingle();
 
@@ -31,12 +22,7 @@ export const getFeedLike = async ({
 export const getFeedLikes = async (
   feed_ids: number[],
 ): Promise<Record<number, boolean>> => {
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
-  if (isAuthSessionMissingError(userError)) return {};
-  if (userError) throw userError;
+  const user = await getCurrentUser();
   if (!user) return {};
 
   if (feed_ids.length === 0) return {};
@@ -65,12 +51,7 @@ export const getFeedLikes = async (
 export const getMyLikedFeeds = async (
   params: FeedLikeParams,
 ): Promise<FeedLikeDto[]> => {
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
-  if (userError) throw userError;
-  if (!user) throw new Error("User not authenticated");
+  const user = await requireCurrentUser();
 
   const { limit = 10, offset = 0 } = params;
 

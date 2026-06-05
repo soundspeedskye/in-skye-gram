@@ -1,5 +1,31 @@
 import { supabase } from "@/shared/api/supabase";
-import type { FeedDto, FeedWithProfile } from "../model/feed.dto";
+import type { FeedDto, FeedProfileDto, FeedWithProfile } from "../model/feed.dto";
+import type { Camelize, Tables } from "@/shared/api/types";
+import { toCamelCase } from "@/shared/lib/utils/case";
+
+export type Feed = Camelize<Tables<"feeds">>;
+export type FeedProfile = Camelize<FeedProfileDto>;
+
+export interface FeedModelWithProfile extends Feed {
+  userProfiles: FeedProfile;
+}
+
+const getFirstRelation = <T>(value: T | T[] | null | undefined): T | null => {
+  if (Array.isArray(value)) return value[0] ?? null;
+  return value ?? null;
+};
+
+const toFeedModelWithProfile = (feed: FeedWithProfile): FeedModelWithProfile => {
+  const camelized = toCamelCase<FeedModelWithProfile>(feed);
+  const profile = getFirstRelation(feed.user_profiles);
+
+  return {
+    ...camelized,
+    userProfiles: toCamelCase<FeedProfile>(
+      profile ?? { nickname: null, profile_image_url: null },
+    ),
+  };
+};
 
 export const getFeedById = async (feedId: number): Promise<FeedDto | null> => {
   const { data, error } = await supabase
@@ -37,6 +63,13 @@ export const getFeedByIdWithProfile = async (
     throw error;
   }
   return data as FeedWithProfile;
+};
+
+export const getFeed = async (
+  feedId: number,
+): Promise<FeedModelWithProfile | null> => {
+  const feed = await getFeedByIdWithProfile(feedId);
+  return feed ? toFeedModelWithProfile(feed) : null;
 };
 
 export const getFeedsByUserId = async (

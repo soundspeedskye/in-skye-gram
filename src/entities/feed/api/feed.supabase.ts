@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { supabase } from '@/shared/api/supabase';
 import { feedImageStorage } from '@/shared/api/imageStorage';
 import { callEdgeFunction } from '@/shared/api/fetchAPI';

@@ -1,23 +1,16 @@
 import { supabase } from "@/shared/api/supabase";
+import { getCurrentUser, requireCurrentUser } from "@/shared/api/auth-utils";
 import type { FeedDto } from "@/entities/feed/feed-list/model/feed.dto";
 import type {
   FeedBookmarkDto,
   FeedBookmarkParams,
 } from "../model/feed-bookmark.dto";
 
-const isAuthSessionMissingError = (error: unknown) =>
-  error instanceof Error && error.name === "AuthSessionMissingError";
-
 // 북마크 목록 조회
 export const getFeedBookmarks = async (
   params: FeedBookmarkParams,
 ): Promise<FeedBookmarkDto[]> => {
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
-  if (userError) throw userError;
-  if (!user) throw new Error("User not found");
+  const user = await requireCurrentUser();
 
   const { limit = 10, offset = 0 } = params;
 
@@ -34,12 +27,7 @@ export const getFeedBookmarks = async (
 
 // 특정 북마크 확인
 export const getIsBookmarked = async (feedId: number): Promise<boolean> => {
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
-  if (isAuthSessionMissingError(userError)) return false;
-  if (userError) throw userError;
+  const user = await getCurrentUser();
   if (!user) return false;
 
   const { data, error } = await supabase
@@ -57,12 +45,7 @@ export const getIsBookmarked = async (feedId: number): Promise<boolean> => {
 export const getAreBookmarked = async (
   feedIds: number[],
 ): Promise<Record<number, boolean>> => {
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
-  if (isAuthSessionMissingError(userError)) return {};
-  if (userError) throw userError;
+  const user = await getCurrentUser();
   if (!user) return {};
 
   if (feedIds.length === 0) return {};
@@ -90,12 +73,7 @@ export const getAreBookmarked = async (
 export const getBookmarkedFeeds = async (
   params: FeedBookmarkParams,
 ): Promise<FeedBookmarkDto[]> => {
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
-  if (userError) throw userError;
-  if (!user) throw new Error("User not authenticated");
+  const user = await requireCurrentUser();
   const { limit = 10, offset = 0 } = params;
 
   const { data, error } = await supabase

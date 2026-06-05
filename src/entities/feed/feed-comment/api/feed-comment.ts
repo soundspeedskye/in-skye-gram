@@ -1,5 +1,49 @@
 import { supabase } from "@/shared/api/supabase";
-import type { FeedCommentWithProfile } from "../model/feed-comment.dto";
+import type {
+  FeedCommentProfileDto,
+  FeedCommentWithProfile,
+} from "../model/feed-comment.dto";
+import type { Camelize, Tables } from "@/shared/api/types";
+import { toCamelCase } from "@/shared/lib/utils/case";
+
+export type FeedComment = Camelize<Tables<"feed_comments">>;
+export type CommentProfile = Camelize<FeedCommentProfileDto>;
+
+export interface FeedCommentModelWithProfile extends FeedComment {
+  userProfiles: CommentProfile;
+  replies?: FeedCommentModelWithProfile[];
+}
+
+const getFirstRelation = <T>(value: T | T[] | null | undefined): T | null => {
+  if (Array.isArray(value)) return value[0] ?? null;
+  return value ?? null;
+};
+
+const toCommentModelWithProfile = (
+  comment: FeedCommentWithProfile,
+): FeedCommentModelWithProfile => {
+  const camelized = toCamelCase<FeedCommentModelWithProfile>(comment);
+  const profile = getFirstRelation(comment.user_profiles);
+
+  return {
+    ...camelized,
+    userProfiles: toCamelCase<CommentProfile>(
+      profile ?? { nickname: null, profile_image_url: null },
+    ),
+  };
+};
+
+const toCommentModelTree = (
+  comment: FeedCommentWithProfile,
+): FeedCommentModelWithProfile => {
+  const model = toCommentModelWithProfile(comment);
+
+  if (comment.replies) {
+    model.replies = comment.replies.map(toCommentModelTree);
+  }
+
+  return model;
+};
 
 // 댓글 목록 조회
 export const getFeedCommentsWithProfile = async (
@@ -63,4 +107,18 @@ export const getFeedCommentById = async (
     throw error;
   }
   return data as FeedCommentWithProfile;
+};
+
+export const getComments = async (
+  feedId: number,
+): Promise<FeedCommentModelWithProfile[]> => {
+  const comments = await getFeedCommentsWithProfile(feedId);
+  return comments.map(toCommentModelTree);
+};
+
+export const getComment = async (
+  commentId: number,
+): Promise<FeedCommentModelWithProfile | null> => {
+  const comment = await getFeedCommentById(commentId);
+  return comment ? toCommentModelWithProfile(comment) : null;
 };
